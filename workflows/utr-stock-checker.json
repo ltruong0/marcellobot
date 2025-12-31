@@ -1,0 +1,172 @@
+{
+  "name": "UTR Stock Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Check Every 10 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://store.ui.com/us/en/products/utr",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "Fetch Product Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Get HTML from response - try different possible locations\nconst html = input.data || input.body || (typeof input === 'string' ? input : JSON.stringify(input));\n\nif (!html || typeof html !== 'string') {\n  throw new Error('Could not get HTML response. Got: ' + typeof html);\n}\n\n// Primary check: schema.org availability (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"');\n\n// Secondary checks\nconst hasAddToCart = html.includes('>Add to Cart<');\nconst hasSoldOut = html.includes('>Sold Out<');\n\n// Extract price from JSON-LD schema\nlet price = 'Unknown';\nconst priceMatch = html.match(/\"price\":(\\d+(?:\\.\\d+)?)/); \nconst currencyMatch = html.match(/\"priceCurrency\":\"([A-Z]+)\"/);\nif (priceMatch) {\n  const amount = parseFloat(priceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine stock status - schema.org is the most reliable indicator\nconst isInStock = schemaInStock || (hasAddToCart && !schemaOutOfStock);\nconst isSoldOut = schemaOutOfStock || (hasSoldOut && !schemaInStock);\n\nreturn [{\n  json: {\n    inStock: isInStock,\n    soldOut: isSoldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: 'https://store.ui.com/us/en/products/utr',\n    productName: 'UniFi Travel Router (UTR)'\n  }\n}];"
+      },
+      "id": "code-check-stock",
+      "name": "Check Stock Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "stock-check",
+              "leftValue": "={{ $json.inStock }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-in-stock",
+      "name": "Is In Stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=**{{ $json.productName }}** is back in stock!\n\n**Price:** {{ $json.price }}\n**Link:** {{ $json.productUrl }}\n\n_Checked at {{ $json.checkedAt }}_"
+      },
+      "id": "discord-notify",
+      "name": "Discord Notification",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [880, -100],
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "mHrRnuwq4guKKQ74",
+          "name": "discord-marcellohomelab-general"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=`[Stock Check]` **{{ $json.productName }}** still out of stock. Checked at {{ $json.checkedAt }}"
+      },
+      "id": "discord-log",
+      "name": "Log Out of Stock",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [880, 100],
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "julArNZJ4JWlSCi7",
+          "name": "discord-marcellohome-logs"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Check Every 10 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Product Page": {
+      "main": [
+        [
+          {
+            "node": "Check Stock Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Stock Status": {
+      "main": [
+        [
+          {
+            "node": "Is In Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is In Stock?": {
+      "main": [
+        [
+          {
+            "node": "Discord Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Out of Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "pinData": {}
+}
