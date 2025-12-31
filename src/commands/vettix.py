@@ -1,6 +1,3 @@
-import io
-import json
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -67,10 +64,16 @@ class VetTixCommands(commands.Cog):
                 f"`[VetTix]` Scraping {state.upper()} events requested by {interaction.user.mention}",
             )
 
+            # Get or create the vettix channel
+            vettix_channel = await self.get_or_create_channel(
+                interaction.guild, VETTIX_CHANNEL
+            )
+
             payload = {
                 "state": state,
                 "status": status,
                 "guild_id": str(interaction.guild_id),
+                "channel_id": str(vettix_channel.id),
             }
 
             result = await self.n8n.trigger_webhook("vettix-scraper", payload)
@@ -83,47 +86,17 @@ class VetTixCommands(commands.Cog):
                 await interaction.followup.send(error_msg)
                 return
 
-            # Get the vettix channel
-            vettix_channel = await self.get_or_create_channel(
-                interaction.guild, VETTIX_CHANNEL
-            )
-
-            # Send summary message
-            summary = result.get("message", "Scrape complete")
-            await vettix_channel.send(summary)
-
-            # Send embeds for top events
-            embeds = result.get("embeds", [])
-            for embed_data in embeds[:10]:
-                embed = discord.Embed(
-                    title=embed_data.get("title", "Event"),
-                    description=embed_data.get("description", ""),
-                    url=embed_data.get("url"),
-                    color=embed_data.get("color", 0x00AA00),
-                )
-                if embed_data.get("footer", {}).get("text"):
-                    embed.set_footer(text=embed_data["footer"]["text"])
-                await vettix_channel.send(embed=embed)
-
-            # Attach JSON file with all events
-            events = result.get("events", [])
-            if events:
-                json_data = json.dumps(events, indent=2, ensure_ascii=False)
-                json_file = discord.File(
-                    io.BytesIO(json_data.encode("utf-8")),
-                    filename=f"vettix_{state}_{status}.json",
-                )
-                await vettix_channel.send(
-                    f"Full results ({len(events)} events):", file=json_file
-                )
+            # n8n handles posting to Discord with threading
+            # Just log and respond to the user
+            event_count = result.get("count", 0)
 
             await self.log_to_channel(
                 interaction.guild,
-                f"`[VetTix]` Scraped {result.get('count', 0)} events for {state.upper()}",
+                f"`[VetTix]` Scraped {event_count} events for {state.upper()}",
             )
 
             await interaction.followup.send(
-                f"Scraped {result.get('count', 0)} events for {state.upper()}. "
+                f"Scraped {event_count} events for {state.upper()}. "
                 f"Results posted to {vettix_channel.mention}"
             )
 
