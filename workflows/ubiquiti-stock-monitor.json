@@ -1,0 +1,344 @@
+{
+  "name": "Ubiquiti Stock Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ubiquiti-stock-watch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "ubiquiti-stock-watch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst action = body.action;\n\n// Get existing watch list from static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nif (action === 'add') {\n  // Check if URL already exists for this guild\n  const exists = watchList.some(p => p.url === body.url && p.guild_id === body.guild_id);\n  \n  if (exists) {\n    return [{\n      json: {\n        success: false,\n        action: 'add',\n        message: 'Product already in watch list: ' + body.url\n      }\n    }];\n  }\n  \n  // Add new product\n  const newProduct = {\n    url: body.url,\n    product_name: body.product_name || 'Unknown Product',\n    guild_id: body.guild_id,\n    added_by: body.added_by,\n    interval_minutes: body.interval_minutes || 5,\n    logs_channel_id: body.logs_channel_id,\n    alerts_channel_id: body.alerts_channel_id,\n    added_at: new Date().toISOString(),\n    last_checked: null,\n    last_in_stock: false\n  };\n  \n  watchList.push(newProduct);\n  staticData.watchList = watchList;\n  \n  return [{\n    json: {\n      success: true,\n      action: 'added',\n      message: 'Added to watch list: ' + body.url\n    }\n  }];\n  \n} else if (action === 'remove') {\n  const initialLength = watchList.length;\n  watchList = watchList.filter(p => !(p.url === body.url && p.guild_id === body.guild_id));\n  staticData.watchList = watchList;\n  \n  if (watchList.length < initialLength) {\n    return [{\n      json: {\n        success: true,\n        action: 'removed',\n        message: 'Removed from watch list: ' + body.url\n      }\n    }];\n  } else {\n    return [{\n      json: {\n        success: false,\n        action: 'remove',\n        message: 'Product not found in watch list: ' + body.url\n      }\n    }];\n  }\n  \n} else if (action === 'list') {\n  const guildProducts = watchList.filter(p => p.guild_id === body.guild_id);\n  \n  if (guildProducts.length === 0) {\n    return [{\n      json: {\n        success: true,\n        action: 'list',\n        products: [],\n        message: 'No products in watch list'\n      }\n    }];\n  }\n  \n  const productList = guildProducts.map((p, i) => \n    `${i + 1}. **${p.product_name}** (every ${p.interval_minutes}m)\\n   ${p.url}`\n  ).join('\\n');\n  \n  return [{\n    json: {\n      success: true,\n      action: 'list',\n      products: guildProducts,\n      count: guildProducts.length,\n      message: `**Watch List (${guildProducts.length} products):**\\n${productList}`\n    }\n  }];\n}\n\nreturn [{ json: { success: false, message: 'Unknown action: ' + action } }];"
+      },
+      "id": "manage-watch-list",
+      "name": "Manage Watch List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get watch list from static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nconst now = new Date();\nconst productsToCheck = [];\n\nfor (let i = 0; i < watchList.length; i++) {\n  const product = watchList[i];\n  if (!product.url) continue;\n  \n  const intervalMinutes = parseInt(product.interval_minutes) || 5;\n  const lastChecked = product.last_checked ? new Date(product.last_checked) : null;\n  \n  let shouldCheck = false;\n  if (!lastChecked) {\n    shouldCheck = true;\n  } else {\n    const minutesSinceLastCheck = (now - lastChecked) / (1000 * 60);\n    shouldCheck = minutesSinceLastCheck >= intervalMinutes;\n  }\n  \n  if (shouldCheck) {\n    productsToCheck.push({\n      json: {\n        ...product,\n        index: i\n      }\n    });\n  }\n}\n\nif (productsToCheck.length === 0) {\n  return [{ json: { skip: true, message: 'No products due for checking' } }];\n}\n\nreturn productsToCheck;"
+      },
+      "id": "get-products",
+      "name": "Get Products to Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-products",
+      "name": "Has Products?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "Fetch Product Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst productData = $('Get Products to Check').first().json;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      ...productData,\n      success: false,\n      error: 'Could not fetch product page'\n    }\n  }];\n}\n\n// Extract product name from page if not set\nlet productName = productData.product_name;\nif (!productName || productName === 'Unknown Product') {\n  const ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\n  const titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\n  if (ogTitleMatch) {\n    productName = ogTitleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n  } else if (titleMatch) {\n    productName = titleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n  }\n}\n\n// Check stock status\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"');\nconst hasAddToCart = html.includes('>Add to Cart<');\nconst hasSoldOut = html.includes('>Sold Out<');\n\n// Extract price\nlet price = 'Unknown';\nconst priceMatch = html.match(/\"price\":(\\d+(?:\\.\\d+)?)/); \nconst currencyMatch = html.match(/\"priceCurrency\":\"([A-Z]+)\"/);\nif (priceMatch) {\n  const amount = parseFloat(priceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock);\nconst wasInStock = productData.last_in_stock === true || productData.last_in_stock === 'true';\nconst sendAlert = inStock && !wasInStock;\n\nreturn [{\n  json: {\n    ...productData,\n    success: true,\n    product_name: productName,\n    inStock: inStock,\n    wasInStock: wasInStock,\n    sendAlert: sendAlert,\n    price: price,\n    checkedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "check-stock",
+      "name": "Check Stock Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\n\n// Update the watch list in static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nif (result.index !== undefined && watchList[result.index]) {\n  watchList[result.index].last_checked = result.checkedAt;\n  watchList[result.index].last_in_stock = result.inStock;\n  watchList[result.index].product_name = result.product_name;\n  staticData.watchList = watchList;\n}\n\nreturn [$input.first()];"
+      },
+      "id": "update-product",
+      "name": "Update Last Checked",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "send-alert-check",
+              "leftValue": "={{ $json.sendAlert }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-send-alert",
+      "name": "Send Alert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1320, 200]
+    },
+    {
+      "parameters": {
+        "authentication": "botToken",
+        "resource": "message",
+        "operation": "send",
+        "guildId": {
+          "__rl": true,
+          "value": "1455288023871656132",
+          "mode": "id"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.alerts_channel_id }}",
+          "mode": "id"
+        },
+        "content": "=🟢 **{{ $json.product_name }}** is back in stock!\n\n**Price:** {{ $json.price }}\n**Link:** {{ $json.url }}"
+      },
+      "id": "discord-alert",
+      "name": "Discord Stock Alert",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1540, 100],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "MarcelloBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "botToken",
+        "resource": "message",
+        "operation": "send",
+        "guildId": {
+          "__rl": true,
+          "value": "1455288023871656132",
+          "mode": "id"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.logs_channel_id }}",
+          "mode": "id"
+        },
+        "content": "=`[Stock Monitor]` Checked **{{ $json.product_name }}**: {{ $json.inStock ? 'In Stock ✓' : 'Out of Stock' }}"
+      },
+      "id": "discord-log",
+      "name": "Discord Log",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1540, 300],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "MarcelloBot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Manage Watch List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manage Watch List": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Get Products to Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Products to Check": {
+      "main": [
+        [
+          {
+            "node": "Has Products?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Products?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Fetch Product Page": {
+      "main": [
+        [
+          {
+            "node": "Check Stock Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Stock Status": {
+      "main": [
+        [
+          {
+            "node": "Update Last Checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Last Checked": {
+      "main": [
+        [
+          {
+            "node": "Send Alert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert?": {
+      "main": [
+        [
+          {
+            "node": "Discord Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Stock Alert": {
+      "main": [
+        [
+          {
+            "node": "Discord Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

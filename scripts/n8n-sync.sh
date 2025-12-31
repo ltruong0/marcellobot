@@ -16,15 +16,16 @@
 
 set -euo pipefail
 
-# Load .env file if it exists
+# Load .env file if it exists (check repo root first, then scripts dir)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="${SCRIPT_DIR}/.env"
-if [[ -f "$ENV_FILE" ]]; then
-    set -a
-    source "$ENV_FILE"
-    set +a
-fi
+for ENV_FILE in "${REPO_ROOT}/.env" "${SCRIPT_DIR}/.env"; do
+    if [[ -f "$ENV_FILE" ]]; then
+        set -a
+        source "$ENV_FILE"
+        set +a
+    fi
+done
 
 # Configuration
 N8N_URL="${N8N_URL:-https://workflows.marcellolab.com}"

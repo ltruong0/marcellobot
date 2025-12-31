@@ -2,6 +2,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
 
 from .config import Config
 from .services import N8NClient
@@ -64,6 +65,7 @@ class MarcelloBot(commands.Bot):
 
 def main():
     """Entry point for the bot."""
+    load_dotenv()
     config = Config.from_env()
     bot = MarcelloBot(config)
 
