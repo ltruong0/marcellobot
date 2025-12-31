@@ -34,7 +34,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\nif (!input.success) {\n  return [{\n    json: {\n      success: false,\n      error: true,\n      message: `Failed to scrape VetTix: ${input.message || 'Unknown error'}`\n    }\n  }];\n}\n\nconst events = input.events || [];\nconst state = input.state || webhookData.state?.toUpperCase() || 'Unknown';\nconst status = input.status || webhookData.status || 'open';\n\n// State name mapping\nconst stateNames = {\n  'TX': 'Texas', 'TN': 'Tennessee', 'CA': 'California', 'NV': 'Nevada',\n  'FL': 'Florida', 'NY': 'New York', 'AZ': 'Arizona', 'CO': 'Colorado',\n  'GA': 'Georgia', 'NC': 'North Carolina'\n};\nconst stateName = stateNames[state] || state;\n\n// Badge emoji mapping\nconst badgeEmojis = {\n  'BASKETBALL': '🏀', 'FOOTBALL': '🏈', 'CONCERTS': '🎵', 'COMEDY': '😂',\n  'HOCKEY': '🏒', 'BASEBALL': '⚾', 'SOCCER': '⚽', 'WRESTLING': '🤼',\n  'THEATER': '🎭', 'MUSICALS': '🎭', 'FAMILY': '👨‍👩‍👧‍👦', 'FESTIVALS/FAIRS': '🎡',\n  'MONSTER TRUCK': '🚚', 'ADULT': '🔞', 'EDUCATIONAL': '📚',\n  'MAGICIAN/ILLUSIONIST': '🎩', 'MIXED MARTIAL ARTS': '🥊', 'SPORTS': '🏅'\n};\n\n// Count events by category\nconst categoryCounts = {};\nfor (const event of events) {\n  const badge = event.badge || 'OTHER';\n  categoryCounts[badge] = (categoryCounts[badge] || 0) + 1;\n}\n\n// Sort categories by count\nconst sortedCategories = Object.entries(categoryCounts)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 6);\n\n// Build category summary\nlet categoryText = '';\nfor (const [badge, count] of sortedCategories) {\n  const emoji = badgeEmojis[badge] || '📦';\n  categoryText += `${emoji} ${badge}: ${count}\\n`;\n}\n\n// Get top 10 events\nconst topEvents = events.slice(0, 10);\n\n// Build embeds for top events\nconst embeds = topEvents.map(event => {\n  const emoji = badgeEmojis[event.badge] || '📦';\n  return {\n    title: event.title,\n    description: `${emoji} **${event.badge}**\\n📅 ${event.date} at ${event.time}\\n📍 ${event.location}`,\n    url: event.link,\n    color: 0x00AA00,\n    footer: {\n      text: event.presented_by !== 'Unknown' ? event.presented_by : undefined\n    }\n  };\n});\n\n// Build summary message\nconst summary = `📊 **VetTix Events - ${stateName} (${state})**\\nFound **${events.length}** events with ${status} tickets\\n\\n**Categories:**\\n${categoryText}`;\n\nreturn [{\n  json: {\n    success: true,\n    state: state,\n    count: events.length,\n    message: summary,\n    embeds: embeds,\n    events: events,\n    guildId: webhookData.guild_id\n  }\n}];"
+        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\nif (!input.success) {\n  return [{\n    json: {\n      success: false,\n      error: true,\n      message: `Failed to scrape VetTix: ${input.message || 'Unknown error'}`\n    }\n  }];\n}\n\nconst events = input.events || [];\nconst state = input.state || webhookData.state?.toUpperCase() || 'Unknown';\nconst status = input.status || webhookData.status || 'open';\nconst channelId = webhookData.channel_id;\n\n// State name mapping\nconst stateNames = {\n  'TX': 'Texas', 'TN': 'Tennessee', 'CA': 'California', 'NV': 'Nevada',\n  'FL': 'Florida', 'NY': 'New York', 'AZ': 'Arizona', 'CO': 'Colorado',\n  'GA': 'Georgia', 'NC': 'North Carolina'\n};\nconst stateName = stateNames[state] || state;\n\n// Badge emoji mapping\nconst badgeDisplayEmojis = {\n  'BASKETBALL': '\\uD83C\\uDFC0', 'FOOTBALL': '\\uD83C\\uDFC8', 'CONCERTS': '\\uD83C\\uDFB5', 'COMEDY': '\\uD83D\\uDE02',\n  'HOCKEY': '\\uD83C\\uDFD2', 'BASEBALL': '\\u26BE', 'SOCCER': '\\u26BD', 'WRESTLING': '\\uD83E\\uDD3C',\n  'THEATER': '\\uD83C\\uDFAD', 'MUSICALS': '\\uD83C\\uDFAD', 'FAMILY': '\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66',\n  'FESTIVALS/FAIRS': '\\uD83C\\uDFA1', 'MONSTER TRUCK': '\\uD83D\\uDE9A', 'ADULT': '\\uD83D\\uDD1E',\n  'EDUCATIONAL': '\\uD83D\\uDCDA', 'MAGICIAN/ILLUSIONIST': '\\uD83C\\uDFA9', 'MIXED MARTIAL ARTS': '\\uD83E\\uDD4A', 'SPORTS': '\\uD83C\\uDFC5'\n};\n\n// Count events by category\nconst categoryCounts = {};\nfor (const event of events) {\n  const badge = event.badge || 'OTHER';\n  categoryCounts[badge] = (categoryCounts[badge] || 0) + 1;\n}\n\n// Sort categories by count\nconst sortedCategories = Object.entries(categoryCounts)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 6);\n\n// Build category summary\nlet categoryText = '';\nfor (const [badge, count] of sortedCategories) {\n  const emoji = badgeDisplayEmojis[badge] || '\\uD83D\\uDCE6';\n  categoryText += `${emoji} ${badge}: ${count}\\n`;\n}\n\n// Build summary message\nconst summary = `\\uD83D\\uDCCA **VetTix Events - ${stateName} (${state})**\\nFound **${events.length}** events with ${status} tickets\\n\\n**Categories:**\\n${categoryText}`;\n\n// Build embeds for events (batched, max 10 per message)\nconst embedBatches = [];\nconst batchSize = 10;\n\nfor (let i = 0; i < events.length; i += batchSize) {\n  const batch = events.slice(i, i + batchSize);\n  const embeds = batch.map(event => {\n    const emoji = badgeDisplayEmojis[event.badge] || '\\uD83D\\uDCE6';\n    return {\n      title: event.title,\n      description: `${emoji} **${event.badge}**\\n\\uD83D\\uDCC5 ${event.date} at ${event.time}\\n\\uD83D\\uDCCD ${event.location}`,\n      url: event.link,\n      color: 43520\n    };\n  });\n  embedBatches.push(embeds);\n}\n\nreturn [{\n  json: {\n    success: true,\n    state: state,\n    stateName: stateName,\n    count: events.length,\n    summary: summary,\n    embedBatches: embedBatches,\n    channelId: channelId,\n    events: events\n  }\n}];"
       },
       "id": "code-format",
       "name": "Format Results",
@@ -73,15 +73,104 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "=https://discord.com/api/v10/channels/{{ $json.channelId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content: $json.summary }) }}",
+        "options": {}
+      },
+      "id": "discord-summary",
+      "name": "Send Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://discord.com/api/v10/channels/{{ $('Format Results').item.json.channelId }}/messages/{{ $json.id }}/threads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $('Format Results').item.json.stateName + ' Events - ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), auto_archive_duration: 1440 }) }}",
+        "options": {}
+      },
+      "id": "discord-create-thread",
+      "name": "Create Thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const threadId = $input.first().json.id;\nconst embedBatches = $('Format Results').item.json.embedBatches;\n\n// Return each batch as a separate item to post to thread\nreturn embedBatches.map(embeds => ({\n  json: {\n    threadId: threadId,\n    embeds: embeds\n  }\n}));"
+      },
+      "id": "code-prepare-batches",
+      "name": "Prepare Embed Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://discord.com/api/v10/channels/{{ $json.threadId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ embeds: $json.embeds }) }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 500
+            }
+          }
+        }
+      },
+      "id": "discord-post-embeds",
+      "name": "Post Embeds to Thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, -100]
+    },
+    {
+      "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, state: $json.state, count: $json.count, message: $json.message, embeds: $json.embeds, events: $json.events }) }}",
+        "responseBody": "={{ JSON.stringify({ success: true, state: $('Format Results').item.json.state, count: $('Format Results').item.json.count, message: 'Posted ' + $('Format Results').item.json.count + ' events to thread' }) }}",
         "options": {}
       },
       "id": "respond-success",
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [880, -100]
+      "position": [1760, -100]
     },
     {
       "parameters": {
@@ -134,7 +223,7 @@
       "main": [
         [
           {
-            "node": "Respond Success",
+            "node": "Send Summary",
             "type": "main",
             "index": 0
           }
@@ -147,9 +236,54 @@
           }
         ]
       ]
+    },
+    "Send Summary": {
+      "main": [
+        [
+          {
+            "node": "Create Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Thread": {
+      "main": [
+        [
+          {
+            "node": "Prepare Embed Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Embed Batches": {
+      "main": [
+        [
+          {
+            "node": "Post Embeds to Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Embeds to Thread": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
   }
 }
