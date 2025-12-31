@@ -1,0 +1,201 @@
+{
+  "name": "VetTix Scraper Schedule",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// States to scrape\nconst states = ['TX', 'TN', 'CA', 'NV'];\n\nreturn states.map(state => ({\n  json: { state: state, status: 'open' }\n}));"
+      },
+      "id": "code-states",
+      "name": "Get States",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://vettix-scraper.vettix-scraper.svc.cluster.local:8000/scrape",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ state: $json.state, status: $json.status }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "http-scrape",
+      "name": "Scrape VetTix",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nif (!input.success) {\n  return [{\n    json: {\n      success: false,\n      message: `Failed to scrape: ${input.message || 'Unknown error'}`\n    }\n  }];\n}\n\nconst events = input.events || [];\nconst state = input.state || 'Unknown';\n\n// State name mapping\nconst stateNames = {\n  'TX': 'Texas', 'TN': 'Tennessee', 'CA': 'California', 'NV': 'Nevada'\n};\nconst stateName = stateNames[state] || state;\n\n// Badge emoji mapping\nconst badgeEmojis = {\n  'BASKETBALL': '🏀', 'FOOTBALL': '🏈', 'CONCERTS': '🎵', 'COMEDY': '😂',\n  'HOCKEY': '🏒', 'BASEBALL': '⚾', 'SOCCER': '⚽', 'WRESTLING': '🤼',\n  'THEATER': '🎭', 'FAMILY': '👨‍👩‍👧‍👦'\n};\n\n// Count events by category\nconst categoryCounts = {};\nfor (const event of events) {\n  const badge = event.badge || 'OTHER';\n  categoryCounts[badge] = (categoryCounts[badge] || 0) + 1;\n}\n\n// Sort categories by count\nconst sortedCategories = Object.entries(categoryCounts)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 5);\n\n// Build category summary\nlet categoryText = '';\nfor (const [badge, count] of sortedCategories) {\n  const emoji = badgeEmojis[badge] || '📦';\n  categoryText += `${emoji} ${badge}: ${count}\\n`;\n}\n\n// Build summary message\nconst summary = `📊 **Daily VetTix Update - ${stateName} (${state})**\\nFound **${events.length}** events with open tickets\\n\\n**Top Categories:**\\n${categoryText}`;\n\nreturn [{\n  json: {\n    success: true,\n    state: state,\n    count: events.length,\n    message: summary,\n    events: events\n  }\n}];"
+      },
+      "id": "code-format",
+      "name": "Format Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-success",
+      "name": "Check Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "operation": "sendChannelMessage",
+        "channelId": {
+          "__rl": true,
+          "value": "vettix-scraper",
+          "mode": "name"
+        },
+        "content": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "discord-send",
+      "name": "Send to Discord",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1100, -100],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "Discord Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChannelMessage",
+        "channelId": {
+          "__rl": true,
+          "value": "logs",
+          "mode": "name"
+        },
+        "content": "=`[VetTix Schedule]` Failed to scrape {{ $('Get States').item.json.state }}: {{ $json.message }}",
+        "options": {}
+      },
+      "id": "discord-error",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1100, 100],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "Discord Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 8am": {
+      "main": [
+        [
+          {
+            "node": "Get States",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get States": {
+      "main": [
+        [
+          {
+            "node": "Scrape VetTix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape VetTix": {
+      "main": [
+        [
+          {
+            "node": "Format Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Results": {
+      "main": [
+        [
+          {
+            "node": "Check Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success?": {
+      "main": [
+        [
+          {
+            "node": "Send to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
