@@ -102,7 +102,7 @@ find_workflow_id() {
 # Clean workflow JSON for API submission
 clean_workflow_for_push() {
     local file="$1"
-    jq 'del(.staticData, .tags, .triggerCount, .pinData, .id, .versionId, .meta, .updatedAt, .createdAt)' "$file"
+    jq '{name, nodes, connections, settings} | with_entries(select(.value != null))' "$file"
 }
 
 # Clean workflow JSON for local storage
