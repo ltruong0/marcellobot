@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-01-04T20:00:38.547Z",
+  "updatedAt": "2026-01-04T20:39:52.744Z",
   "createdAt": "2026-01-04T18:39:06.443Z",
   "id": "lhLoQhhm3AllylbO",
   "name": "Recipe Parser",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -275,7 +275,7 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "recipe-book-git-pat",
+          "id": "tfxIMRDF2ByZfXy1",
           "name": "recipe-book-git-pat"
         }
       }
@@ -314,7 +314,7 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "recipe-book-git-pat",
+          "id": "tfxIMRDF2ByZfXy1",
           "name": "recipe-book-git-pat"
         }
       }
@@ -340,7 +340,7 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "recipe-book-git-pat",
+          "id": "tfxIMRDF2ByZfXy1",
           "name": "recipe-book-git-pat"
         }
       }
@@ -366,7 +366,7 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "recipe-book-git-pat",
+          "id": "tfxIMRDF2ByZfXy1",
           "name": "recipe-book-git-pat"
         }
       }
@@ -611,8 +611,8 @@
   "meta": {
     "templateCredsSetupCompleted": false
   },
-  "activeVersionId": null,
-  "versionCounter": 4,
+  "activeVersionId": "66a1cf1c-c9cd-4960-bffe-f749c33405b8",
+  "versionCounter": 10,
   "shared": [
     {
       "updatedAt": "2026-01-04T18:39:06.643Z",
@@ -636,7 +636,7 @@
             "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
             "projectId": "9PluwpnSgpfsJVgg",
             "user": {
-              "updatedAt": "2026-01-04T18:25:36.554Z",
+              "updatedAt": "2026-01-04T20:09:23.000Z",
               "createdAt": "2025-12-28T01:35:38.819Z",
               "id": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
               "email": "lee.t.truong@gmail.com",
@@ -672,5 +672,621 @@
     }
   ],
   "tags": [],
-  "activeVersion": null
+  "activeVersion": {
+    "updatedAt": "2026-01-04T20:41:50.000Z",
+    "createdAt": "2026-01-04T20:39:52.750Z",
+    "versionId": "66a1cf1c-c9cd-4960-bffe-f749c33405b8",
+    "workflowId": "lhLoQhhm3AllylbO",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "recipe-parser",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook-trigger",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "recipe-parser"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.body.url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            },
+            "timeout": 30000
+          }
+        },
+        "id": "http-fetch-page",
+        "name": "Fetch Recipe Page",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          224,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://raw.githubusercontent.com/ltruong0/recipe-book/main/index.json",
+          "options": {
+            "allowUnauthorizedCerts": true,
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "http-fetch-index",
+        "name": "Fetch Recipe Index",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          448,
+          0
+        ],
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst recipeUrl = webhookData.url;\nconst pageHtml = $('Fetch Recipe Page').first().json.data;\n\n// Fetch index response (may be empty on first run)\nlet index = [];\ntry {\n  const indexResponse = $input.first().json;\n  if (indexResponse && indexResponse.recipes) {\n    index = indexResponse.recipes;\n  }\n} catch (e) {\n  // Index doesn't exist yet\n  index = [];\n}\n\n// Normalize URL for comparison\nconst normalizeUrl = (url) => {\n  return url.toLowerCase()\n    .replace(/^https?:\\/\\//, '')\n    .replace(/www\\./, '')\n    .replace(/\\/+$/, '')\n    .replace(/\\?.*$/, '');\n};\n\nconst normalizedInput = normalizeUrl(recipeUrl);\nconst duplicate = index.find(r => normalizeUrl(r.sourceUrl) === normalizedInput);\n\nif (duplicate) {\n  return [{\n    json: {\n      isDuplicate: true,\n      title: duplicate.title,\n      existingPath: duplicate.path,\n      existingUrl: `https://github.com/ltruong0/recipe-book/blob/main/${duplicate.path}`\n    }\n  }];\n}\n\n// Pass through for AI processing\nreturn [{\n  json: {\n    isDuplicate: false,\n    pageHtml: pageHtml,\n    sourceUrl: recipeUrl,\n    index: index\n  }\n}];"
+        },
+        "id": "code-check-duplicate",
+        "name": "Check Duplicate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "duplicate-check",
+                "leftValue": "={{ $json.isDuplicate }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if-duplicate",
+        "name": "Is Duplicate?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          880,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, duplicate: true, title: $json.title, existingUrl: $json.existingUrl, message: 'Recipe already exists in the recipe book' }) }}",
+          "options": {}
+        },
+        "id": "respond-duplicate",
+        "name": "Respond Duplicate",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1104,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ 'Parse the following HTML and extract recipe information. Return ONLY valid JSON with no additional text, markdown formatting, or code blocks.\\n\\nRequired JSON structure:\\n{\\n  \"title\": \"recipe name\",\\n  \"description\": \"brief description (1-2 sentences)\",\\n  \"prepTime\": \"preparation time or null\",\\n  \"cookTime\": \"cooking time or null\",\\n  \"totalTime\": \"total time or null\",\\n  \"servings\": \"number of servings or null\",\\n  \"ingredients\": [\"ingredient 1\", \"ingredient 2\"],\\n  \"instructions\": [\"step 1\", \"step 2\"],\\n  \"imageUrls\": [\"url1\", \"url2\"],\\n  \"tags\": [\"tag1\", \"tag2\"],\\n  \"source\": \"website name\"\\n}\\n\\nRules:\\n- Extract ALL ingredients and ALL instructions\\n- For imageUrls, find the main recipe images (not icons or logos)\\n- Tags should be categories like \"dinner\", \"vegetarian\", \"quick\", \"dessert\", etc.\\n- Source is the website or blog name\\n\\nHTML Content (first 80000 chars):\\n' + $json.pageHtml.substring(0, 80000) }}",
+          "options": {
+            "systemMessage": "You are a recipe extraction expert. Extract recipe data from HTML and return only valid JSON. Never include markdown code blocks or any text outside the JSON object."
+          }
+        },
+        "id": "ai-parse-recipe",
+        "name": "AI Parse Recipe",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          1104,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "claude-sonnet-4-5-20250929",
+            "mode": "list",
+            "cachedResultName": "Claude Sonnet 4.5"
+          },
+          "options": {
+            "maxTokensToSample": 4096,
+            "temperature": 0
+          }
+        },
+        "id": "anthropic-model",
+        "name": "Anthropic Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.3,
+        "position": [
+          1104,
+          304
+        ],
+        "credentials": {
+          "anthropicApi": {
+            "id": "9jKf9TnnEcMxtr7w",
+            "name": "anthropic-n8n-recipe-agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const aiResponse = $input.first().json.output;\nconst previousData = $('Check Duplicate').first().json;\n\n// Parse AI response (handle potential JSON in markdown code blocks)\nlet recipe;\ntry {\n  let jsonStr = aiResponse;\n  // Remove markdown code blocks if present\n  const jsonMatch = aiResponse.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1];\n  }\n  recipe = JSON.parse(jsonStr.trim());\n} catch (e) {\n  return [{\n    json: {\n      success: false,\n      error: true,\n      message: `Failed to parse AI response: ${e.message}`\n    }\n  }];\n}\n\n// Validate required fields\nif (!recipe.title || !recipe.ingredients || !recipe.instructions) {\n  return [{\n    json: {\n      success: false,\n      error: true,\n      message: 'AI response missing required fields (title, ingredients, or instructions)'\n    }\n  }];\n}\n\n// Generate slug from title\nconst slug = recipe.title\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-|-$/g, '');\n\n// Generate filename\nconst filename = `${slug}.md`;\nconst imagePath = `images/${slug}`;\n\nreturn [{\n  json: {\n    success: true,\n    recipe: recipe,\n    slug: slug,\n    filename: filename,\n    imagePath: imagePath,\n    sourceUrl: previousData.sourceUrl,\n    existingIndex: previousData.index\n  }\n}];"
+        },
+        "id": "code-process-ai",
+        "name": "Process AI Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1328,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "success-check",
+                "leftValue": "={{ $json.success }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if-ai-success",
+        "name": "AI Parse Success?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1552,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, error: true, message: $json.message || 'Failed to parse recipe' }) }}",
+          "options": {}
+        },
+        "id": "respond-ai-error",
+        "name": "Respond AI Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1760,
+          208
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst recipe = data.recipe;\nconst imagePath = data.imagePath;\n\n// We'll download up to 3 images\nconst imageUrls = (recipe.imageUrls || []).slice(0, 3);\nconst downloadedImages = [];\n\nfor (let i = 0; i < imageUrls.length; i++) {\n  const imageUrl = imageUrls[i];\n  try {\n    // Use fetch to download image\n    const response = await fetch(imageUrl);\n    if (!response.ok) continue;\n    \n    const arrayBuffer = await response.arrayBuffer();\n    const buffer = Buffer.from(arrayBuffer);\n    \n    const contentType = response.headers.get('content-type') || 'image/jpeg';\n    let ext = 'jpg';\n    if (contentType.includes('png')) ext = 'png';\n    else if (contentType.includes('webp')) ext = 'webp';\n    else if (contentType.includes('gif')) ext = 'gif';\n    \n    const filename = i === 0 ? `main.${ext}` : `image-${i + 1}.${ext}`;\n    const base64Content = buffer.toString('base64');\n    \n    downloadedImages.push({\n      path: `${imagePath}/${filename}`,\n      content: base64Content,\n      originalUrl: imageUrl,\n      isMain: i === 0\n    });\n  } catch (e) {\n    // Skip failed images\n    console.log(`Failed to download image: ${imageUrl}`);\n  }\n}\n\nreturn [{\n  json: {\n    ...data,\n    downloadedImages: downloadedImages,\n    mainImagePath: downloadedImages.length > 0 ? downloadedImages[0].path : null\n  }\n}];"
+        },
+        "id": "code-download-images",
+        "name": "Download Images",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1760,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst recipe = data.recipe;\nconst sourceUrl = data.sourceUrl;\nconst mainImagePath = data.mainImagePath;\n\n// Build frontmatter\nconst escapeYaml = (str) => {\n  if (!str) return '';\n  return str.replace(/\"/g, '\\\\\"');\n};\n\nlet markdown = '---\\n';\nmarkdown += `title: \"${escapeYaml(recipe.title)}\"\\n`;\nif (recipe.description) markdown += `description: \"${escapeYaml(recipe.description)}\"\\n`;\nmarkdown += `date: ${new Date().toISOString()}\\n`;\nif (recipe.source) markdown += `source: \"${escapeYaml(recipe.source)}\"\\n`;\nmarkdown += `sourceUrl: \"${sourceUrl}\"\\n`;\nif (recipe.prepTime) markdown += `prepTime: \"${recipe.prepTime}\"\\n`;\nif (recipe.cookTime) markdown += `cookTime: \"${recipe.cookTime}\"\\n`;\nif (recipe.totalTime) markdown += `totalTime: \"${recipe.totalTime}\"\\n`;\nif (recipe.servings) markdown += `servings: \"${recipe.servings}\"\\n`;\nif (recipe.tags && recipe.tags.length > 0) {\n  markdown += `tags:\\n`;\n  recipe.tags.forEach(tag => {\n    markdown += `  - ${tag}\\n`;\n  });\n}\nif (mainImagePath) markdown += `image: \"/${mainImagePath}\"\\n`;\nmarkdown += '---\\n\\n';\n\n// Title\nmarkdown += `# ${recipe.title}\\n\\n`;\n\n// Main image\nif (mainImagePath) {\n  markdown += `![${recipe.title}](/${mainImagePath})\\n\\n`;\n}\n\n// Description\nif (recipe.description) {\n  markdown += `${recipe.description}\\n\\n`;\n}\n\n// Time info\nconst timeInfo = [];\nif (recipe.prepTime) timeInfo.push(`**Prep Time:** ${recipe.prepTime}`);\nif (recipe.cookTime) timeInfo.push(`**Cook Time:** ${recipe.cookTime}`);\nif (recipe.totalTime) timeInfo.push(`**Total Time:** ${recipe.totalTime}`);\nif (recipe.servings) timeInfo.push(`**Servings:** ${recipe.servings}`);\nif (timeInfo.length > 0) {\n  markdown += timeInfo.join(' | ') + '\\n\\n';\n}\n\n// Ingredients\nmarkdown += '## Ingredients\\n\\n';\nrecipe.ingredients.forEach(ing => {\n  markdown += `- ${ing}\\n`;\n});\nmarkdown += '\\n';\n\n// Instructions\nmarkdown += '## Instructions\\n\\n';\nrecipe.instructions.forEach((step, i) => {\n  markdown += `${i + 1}. ${step}\\n`;\n});\nmarkdown += '\\n';\n\n// Source link\nmarkdown += `---\\n\\n*Source: [${recipe.source || 'Original Recipe'}](${sourceUrl})*\\n`;\n\n// Update index with new recipe\nconst updatedIndex = [...data.existingIndex, {\n  title: recipe.title,\n  slug: data.slug,\n  path: `recipes/${data.filename}`,\n  sourceUrl: sourceUrl,\n  date: new Date().toISOString(),\n  tags: recipe.tags || []\n}];\n\nreturn [{\n  json: {\n    ...data,\n    markdownContent: markdown,\n    markdownPath: `recipes/${data.filename}`,\n    updatedIndex: updatedIndex\n  }\n}];"
+        },
+        "id": "code-create-markdown",
+        "name": "Create Markdown",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1984,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/ltruong0/recipe-book/git/ref/heads/main",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "github-get-ref",
+        "name": "Get Branch Ref",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2208,
+          0
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "tfxIMRDF2ByZfXy1",
+            "name": "recipe-book-git-pat"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $('Create Markdown').first().json;\nconst branchRef = $input.first().json;\n\n// Helper to create a blob via GitHub API\nconst createBlob = async (content, encoding = 'utf-8') => {\n  const response = await fetch('https://api.github.com/repos/ltruong0/recipe-book/git/blobs', {\n    method: 'POST',\n    headers: {\n      'Authorization': `Bearer ${$env.GITHUB_TOKEN}`,\n      'Content-Type': 'application/json',\n      'Accept': 'application/vnd.github+json'\n    },\n    body: JSON.stringify({ content, encoding })\n  });\n  if (!response.ok) {\n    throw new Error(`Failed to create blob: ${response.status}`);\n  }\n  return await response.json();\n};\n\nconst treeEntries = [];\n\n// 1. Markdown file\ntreeEntries.push({\n  path: data.markdownPath,\n  mode: '100644',\n  type: 'blob',\n  content: data.markdownContent\n});\n\n// 2. Upload images as blobs\nfor (const img of (data.downloadedImages || [])) {\n  try {\n    const blob = await createBlob(img.content, 'base64');\n    treeEntries.push({\n      path: img.path,\n      mode: '100644',\n      type: 'blob',\n      sha: blob.sha\n    });\n  } catch (e) {\n    console.log(`Failed to upload image ${img.path}: ${e.message}`);\n  }\n}\n\n// 3. Updated index.json\ntreeEntries.push({\n  path: 'index.json',\n  mode: '100644',\n  type: 'blob',\n  content: JSON.stringify({ recipes: data.updatedIndex }, null, 2)\n});\n\nreturn [{\n  json: {\n    treeEntries: treeEntries,\n    baseTreeSha: branchRef.object.sha,\n    parentCommitSha: branchRef.object.sha,\n    recipeTitle: data.recipe.title,\n    recipeData: data\n  }\n}];"
+        },
+        "id": "code-prepare-commit",
+        "name": "Prepare Commit",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2432,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.github.com/repos/ltruong0/recipe-book/git/trees",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ base_tree: $json.baseTreeSha, tree: $json.treeEntries }) }}",
+          "options": {}
+        },
+        "id": "github-create-tree",
+        "name": "Create Tree",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2640,
+          0
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "tfxIMRDF2ByZfXy1",
+            "name": "recipe-book-git-pat"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.github.com/repos/ltruong0/recipe-book/git/commits",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ message: 'Add recipe: ' + $('Prepare Commit').first().json.recipeTitle, tree: $json.sha, parents: [$('Prepare Commit').first().json.parentCommitSha] }) }}",
+          "options": {}
+        },
+        "id": "github-create-commit",
+        "name": "Create Commit",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2864,
+          0
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "tfxIMRDF2ByZfXy1",
+            "name": "recipe-book-git-pat"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "https://api.github.com/repos/ltruong0/recipe-book/git/refs/heads/main",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ sha: $json.sha, force: false }) }}",
+          "options": {}
+        },
+        "id": "github-update-ref",
+        "name": "Update Branch Ref",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3088,
+          0
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "tfxIMRDF2ByZfXy1",
+            "name": "recipe-book-git-pat"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const commitData = $('Create Commit').first().json;\nconst recipeData = $('Prepare Commit').first().json.recipeData;\n\nreturn [{\n  json: {\n    success: true,\n    title: recipeData.recipe.title,\n    description: recipeData.recipe.description,\n    imageUrl: recipeData.downloadedImages?.[0]?.originalUrl || null,\n    ingredientCount: recipeData.recipe.ingredients.length,\n    stepCount: recipeData.recipe.instructions.length,\n    commitUrl: `https://github.com/ltruong0/recipe-book/commit/${commitData.sha}`,\n    recipeUrl: `https://github.com/ltruong0/recipe-book/blob/main/${recipeData.markdownPath}`,\n    message: 'Recipe saved successfully'\n  }\n}];"
+        },
+        "id": "code-prepare-response",
+        "name": "Prepare Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3312,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "id": "respond-success",
+        "name": "Respond Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          3520,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Fetch Recipe Page",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Recipe Page": {
+        "main": [
+          [
+            {
+              "node": "Fetch Recipe Index",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Recipe Index": {
+        "main": [
+          [
+            {
+              "node": "Check Duplicate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Duplicate": {
+        "main": [
+          [
+            {
+              "node": "Is Duplicate?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Duplicate?": {
+        "main": [
+          [
+            {
+              "node": "Respond Duplicate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AI Parse Recipe",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Anthropic Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Parse Recipe",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Parse Recipe": {
+        "main": [
+          [
+            {
+              "node": "Process AI Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process AI Output": {
+        "main": [
+          [
+            {
+              "node": "AI Parse Success?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Parse Success?": {
+        "main": [
+          [
+            {
+              "node": "Download Images",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond AI Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Images": {
+        "main": [
+          [
+            {
+              "node": "Create Markdown",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Markdown": {
+        "main": [
+          [
+            {
+              "node": "Get Branch Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Branch Ref": {
+        "main": [
+          [
+            {
+              "node": "Prepare Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Commit": {
+        "main": [
+          [
+            {
+              "node": "Create Tree",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Tree": {
+        "main": [
+          [
+            {
+              "node": "Create Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Commit": {
+        "main": [
+          [
+            {
+              "node": "Update Branch Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Branch Ref": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Response": {
+        "main": [
+          [
+            {
+              "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Lee Truong",
+    "name": "Version 66a1cf1c",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-04T20:41:50.332Z",
+        "id": 36,
+        "workflowId": "lhLoQhhm3AllylbO",
+        "versionId": "66a1cf1c-c9cd-4960-bffe-f749c33405b8",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      }
+    ]
+  }
 }
