@@ -29,27 +29,48 @@ class RecipeCommands(commands.Cog):
         await channel.send(message)
 
     @app_commands.command(
-        name="recipe", description="Parse a recipe from a URL and save to recipe book"
+        name="recipe",
+        description="Parse a recipe from a URL or pasted text and save to recipe book",
     )
     @app_commands.describe(
         url="URL of the recipe page to parse",
+        recipe_text="Raw recipe text (ingredients and instructions) to parse",
     )
     async def parse_recipe(
         self,
         interaction: discord.Interaction,
-        url: str,
+        url: str | None = None,
+        recipe_text: str | None = None,
     ):
-        """Parse a recipe from URL and save to GitHub recipe book."""
+        """Parse a recipe from URL or raw text and save to GitHub recipe book."""
+        # Validate that at least one input is provided
+        if not url and not recipe_text:
+            await interaction.response.send_message(
+                "Please provide either a URL or recipe text to parse.", ephemeral=True
+            )
+            return
+
         await interaction.response.defer(thinking=True)
 
         try:
-            await self.log_to_channel(
-                interaction.guild,
-                f"`[Recipe]` Parsing <{url}> requested by {interaction.user.mention}",
-            )
+            if url:
+                await self.log_to_channel(
+                    interaction.guild,
+                    f"`[Recipe]` Parsing <{url}> requested by {interaction.user.mention}",
+                )
+            else:
+                # Truncate for logging
+                preview = (
+                    recipe_text[:50] + "..." if len(recipe_text) > 50 else recipe_text
+                )
+                await self.log_to_channel(
+                    interaction.guild,
+                    f"`[Recipe]` Parsing text recipe requested by {interaction.user.mention}: {preview}",
+                )
 
             payload = {
                 "url": url,
+                "recipe_text": recipe_text,
                 "guild_id": str(interaction.guild_id),
                 "requested_by": str(interaction.user),
             }
