@@ -200,6 +200,7 @@ Examples:
 3. Use `get_or_create_channel()` for dynamic channel creation
 4. Log all workflow activity to `#logs`
 5. Register in `src/bot.py` setup_hook
+6. **Update `src/commands/help.py`** to include the new command in the help embed
 
 ## Adding New Workflows
 
