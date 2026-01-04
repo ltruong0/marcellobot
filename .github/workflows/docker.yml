@@ -1,6 +1,9 @@
-name: Build Docker Image (PR)
+name: Build Docker Image
 
 on:
+  push:
+    branches:
+      - '**'  # All branches
   pull_request:
     branches: [main]
 
