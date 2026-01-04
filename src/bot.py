@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 from .config import Config
 from .services import N8NClient
-from .commands import stock, home, status, webhook, help, vettix
+from .commands import stock, home, status, webhook, help, vettix, recipe
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,6 +45,7 @@ class MarcelloBot(commands.Bot):
         await webhook.setup(self, self.n8n)
         await help.setup(self, self.n8n)
         await vettix.setup(self, self.n8n)
+        await recipe.setup(self, self.n8n)
 
         logger.info("Syncing slash commands...")
         await self.tree.sync()
