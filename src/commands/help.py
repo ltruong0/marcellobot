@@ -50,6 +50,17 @@ class HelpCommands(commands.Cog):
             inline=False,
         )
 
+        # Recipe Commands
+        embed.add_field(
+            name="Recipe Book",
+            value=(
+                "`/recipe url:<url>` - Parse a recipe from a URL and save to recipe book\n"
+                "`/recipe recipe_text:<text>` - Parse pasted recipe text and save to recipe book\n"
+                "  Supports unstructured text with ingredients and instructions"
+            ),
+            inline=False,
+        )
+
         # Workflow Commands
         embed.add_field(
             name="Workflows",
