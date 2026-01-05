@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6.0 (2026-01-05)
+
+## [0.6.0](https://github.com/ltruong0/marcellobot/compare/v0.5.0...v0.6.0) (2026-01-05)
+
+
+### Features
+
+* scope n8n sync to repo workflows and auto-update changelog ([874d268](https://github.com/ltruong0/marcellobot/commit/874d2681fbff286dbbfd4db4842d77ed11a8942d))
+
+
+
 ## 0.1.0 (2025-12-31)
 
 
