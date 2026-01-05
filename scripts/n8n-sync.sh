@@ -1,12 +1,13 @@
 #!/bin/bash
 #
-# Bidirectional n8n workflow sync
+# Bidirectional n8n workflow sync (scoped to this repo's workflows only)
 #
 # Commands:
 #   push [file.json]   - Push local workflows to n8n (default)
-#   pull [name]        - Pull workflows from n8n to local
+#   pull [name]        - Pull updates for local workflows from n8n
+#   pull --all         - Pull ALL workflows from n8n (including unmanaged)
 #   diff               - Show differences between local and remote
-#   list               - List all workflows on n8n
+#   list               - List all workflows on n8n (marks managed ones)
 #
 # Environment variables:
 #   N8N_URL     - n8n server URL (default: https://workflows.marcellolab.com)
@@ -262,7 +263,28 @@ pull_workflow() {
     log_info "Saved: $name -> ${filename}.json"
 }
 
+# Get list of workflow names managed by this repo
+get_local_workflow_names() {
+    local names=()
+    while IFS= read -r -d '' file; do
+        local name
+        name=$(jq -r '.name' "$file")
+        if [[ -n "$name" && "$name" != "null" ]]; then
+            names+=("$name")
+        fi
+    done < <(find "$WORKFLOWS_DIR" -name "*.json" -type f -print0 2>/dev/null)
+    printf '%s\n' "${names[@]}"
+}
+
 cmd_pull() {
+    local pull_all=false
+
+    # Check for --all flag
+    if [[ "${1:-}" == "--all" ]]; then
+        pull_all=true
+        shift
+    fi
+
     log_info "Pulling workflows from n8n..."
     log_info "Server: ${N8N_URL}"
 
@@ -278,7 +300,7 @@ cmd_pull() {
 
     local count
     count=$(echo "$workflows" | jq 'length')
-    log_info "Found ${count} workflow(s)"
+    log_info "Found ${count} remote workflow(s)"
 
     if [[ $# -gt 0 ]]; then
         # Pull specific workflow by name
@@ -292,11 +314,39 @@ cmd_pull() {
         fi
 
         pull_workflow "$workflow"
-    else
-        # Pull all workflows
+    elif [[ "$pull_all" == "true" ]]; then
+        # Pull all workflows (explicit --all flag)
+        log_warn "Pulling ALL remote workflows (including unmanaged)"
         echo "$workflows" | jq -c '.[]' | while read -r workflow; do
             pull_workflow "$workflow"
         done
+    else
+        # Default: Only pull workflows that exist locally
+        log_info "Pulling only workflows managed by this repo..."
+        log_info "(use 'pull --all' to pull all remote workflows)"
+
+        local local_names
+        local_names=$(get_local_workflow_names)
+
+        if [[ -z "$local_names" ]]; then
+            log_warn "No local workflows found. Use 'pull --all' to pull from remote."
+            exit 0
+        fi
+
+        local pulled=0
+        local skipped=0
+        echo "$workflows" | jq -c '.[]' | while read -r workflow; do
+            local name
+            name=$(echo "$workflow" | jq -r '.name')
+            if echo "$local_names" | grep -qxF "$name"; then
+                pull_workflow "$workflow"
+                ((pulled++)) || true
+            else
+                ((skipped++)) || true
+            fi
+        done
+
+        log_info "Skipped ${skipped} unmanaged workflow(s)"
     fi
 
     echo ""
@@ -316,12 +366,25 @@ cmd_list() {
     local workflows
     workflows=$(get_remote_workflows)
 
-    echo "$workflows" | jq -r '.[] | "  \(.id)\t\(.active | if . then "✓" else "○" end)\t\(.name)"' | column -t -s $'\t'
+    # Get local workflow names for comparison
+    local local_names
+    local_names=$(get_local_workflow_names)
+
+    # Display with managed indicator
+    echo "$workflows" | jq -r '.[] | "\(.id)\t\(.active | if . then "✓" else "○" end)\t\(.name)"' | while IFS=$'\t' read -r id active name; do
+        local managed=""
+        if echo "$local_names" | grep -qxF "$name"; then
+            managed="${GREEN}[managed]${NC}"
+        fi
+        printf "  %-8s %s  %-40s %b\n" "$id" "$active" "$name" "$managed"
+    done
 
     echo ""
-    local count
-    count=$(echo "$workflows" | jq 'length')
-    log_info "Total: ${count} workflow(s)"
+    local total
+    total=$(echo "$workflows" | jq 'length')
+    local managed_count
+    managed_count=$(echo "$local_names" | grep -c . || echo 0)
+    log_info "Total: ${total} workflow(s), ${managed_count} managed by this repo"
 }
 
 # ============================================================================
@@ -351,7 +414,7 @@ cmd_diff() {
     done < <(echo "$remote_workflows" | jq -r '.[].name')
 
     echo ""
-    echo -e "${CYAN}Local only (need to push):${NC}"
+    echo -e "${CYAN}Local only (will be created on push):${NC}"
     for name in "${local_names[@]}"; do
         if [[ ! " ${remote_names[*]} " =~ " ${name} " ]]; then
             echo "  + $name"
@@ -359,20 +422,23 @@ cmd_diff() {
     done
 
     echo ""
-    echo -e "${CYAN}Remote only (need to pull):${NC}"
-    for name in "${remote_names[@]}"; do
-        if [[ ! " ${local_names[*]} " =~ " ${name} " ]]; then
-            echo "  - $name"
-        fi
-    done
-
-    echo ""
-    echo -e "${CYAN}Exist in both (may need sync):${NC}"
+    echo -e "${CYAN}Synced (exist in both local and remote):${NC}"
     for name in "${local_names[@]}"; do
         if [[ " ${remote_names[*]} " =~ " ${name} " ]]; then
             echo "  = $name"
         fi
     done
+
+    echo ""
+    echo -e "${CYAN}Unmanaged (remote only, not tracked by this repo):${NC}"
+    for name in "${remote_names[@]}"; do
+        if [[ ! " ${local_names[*]} " =~ " ${name} " ]]; then
+            echo "  · $name"
+        fi
+    done
+
+    echo ""
+    log_info "Only workflows in 'Local only' and 'Synced' are managed by this repo"
 }
 
 # ============================================================================
@@ -384,14 +450,18 @@ usage() {
     echo ""
     echo "Commands:"
     echo "  push [file.json]   Push local workflows to n8n"
-    echo "  pull [name]        Pull workflows from n8n to local"
+    echo "  pull [name]        Pull updates for workflows managed by this repo"
+    echo "  pull --all         Pull ALL workflows from n8n (including unmanaged)"
     echo "  diff               Show differences between local and remote"
-    echo "  list               List all workflows on n8n"
+    echo "  list               List all workflows on n8n (marks managed ones)"
     echo ""
     echo "Environment:"
     echo "  N8N_URL            n8n server URL (default: https://workflows.marcellolab.com)"
     echo "  N8N_TOKEN          n8n API token (required)"
     echo "  DRY_RUN=true       Preview changes without applying"
+    echo ""
+    echo "This script only syncs workflows defined in the workflows/ directory."
+    echo "Other workflows in your n8n instance are not affected."
 }
 
 main() {

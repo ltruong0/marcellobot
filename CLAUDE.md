@@ -20,17 +20,23 @@ The bot auto-creates channels if they don't exist.
 
 ### Workflow Sync
 
-Workflows are stored in `workflows/` as JSON files. Use the sync script:
+Workflows are stored in `workflows/` as JSON files. The sync script is scoped to only manage workflows defined in this repo—other workflows in your n8n instance are not affected.
 
 ```bash
 # Push local workflows to n8n
 ./scripts/n8n-sync.sh push
 
-# Pull workflows from n8n to local
+# Pull updates for workflows managed by this repo
 ./scripts/n8n-sync.sh pull
 
-# List remote workflows
+# Pull ALL workflows from n8n (including unmanaged)
+./scripts/n8n-sync.sh pull --all
+
+# List remote workflows (marks managed ones)
 ./scripts/n8n-sync.sh list
+
+# Show differences between local and remote
+./scripts/n8n-sync.sh diff
 
 # Preview changes without applying
 DRY_RUN=true ./scripts/n8n-sync.sh push

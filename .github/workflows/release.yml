@@ -40,6 +40,42 @@ jobs:
           default_bump: patch
           release_branches: main
 
+      - name: Update CHANGELOG.md
+        if: steps.tag.outputs.new_tag
+        env:
+          NEW_TAG: ${{ steps.tag.outputs.new_tag }}
+          CHANGELOG_CONTENT: ${{ steps.tag.outputs.changelog }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+
+          # Create new changelog entry
+          NEW_ENTRY="## ${NEW_TAG} (${DATE})
+
+          ${CHANGELOG_CONTENT}"
+
+          # Prepend to CHANGELOG.md after the header
+          if [ -f CHANGELOG.md ]; then
+            # Keep the header, insert new entry, then rest of file
+            head -n 1 CHANGELOG.md > CHANGELOG.tmp
+            echo "" >> CHANGELOG.tmp
+            printf '%s\n' "$NEW_ENTRY" >> CHANGELOG.tmp
+            tail -n +2 CHANGELOG.md >> CHANGELOG.tmp
+            mv CHANGELOG.tmp CHANGELOG.md
+          else
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            printf '%s\n' "$NEW_ENTRY" >> CHANGELOG.md
+          fi
+
+      - name: Commit CHANGELOG.md
+        if: steps.tag.outputs.new_tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for ${{ steps.tag.outputs.new_tag }} [skip ci]" || echo "No changes to commit"
+          git push
+
       - name: Log in to Container Registry
         if: steps.tag.outputs.new_tag
         uses: docker/login-action@v3

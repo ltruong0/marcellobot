@@ -29,7 +29,7 @@ marcellobot/
 
 ## n8n Workflow Sync
 
-Bidirectional sync between local JSON files and n8n instance.
+Sync workflows between local JSON files and n8n instance. The script is scoped to only manage workflows defined in this repo—other workflows in your n8n instance are not affected.
 
 ```bash
 # Setup
@@ -40,16 +40,19 @@ cp .env.example .env
 # Push local workflows to n8n
 ./n8n-sync.sh push
 
-# Pull all workflows from n8n
+# Pull updates for workflows managed by this repo
 ./n8n-sync.sh pull
 
-# Pull specific workflow
+# Pull ALL workflows from n8n (including unmanaged)
+./n8n-sync.sh pull --all
+
+# Pull specific workflow by name
 ./n8n-sync.sh pull "My Workflow Name"
 
-# List remote workflows
+# List remote workflows (marks managed ones)
 ./n8n-sync.sh list
 
-# Show differences
+# Show differences between local and remote
 ./n8n-sync.sh diff
 
 # Dry run (preview changes)
