@@ -33,6 +33,18 @@ class HelpCommands(commands.Cog):
             inline=False,
         )
 
+        # Best Buy Stock Commands
+        embed.add_field(
+            name="Best Buy Stock Monitoring",
+            value=(
+                "`/bestbuy-stock <url>` - Check if a product is in stock\n"
+                "`/bestbuy-watch <url> [interval]` - Add product to watch list (default: 5 min)\n"
+                "`/bestbuy-unwatch <url>` - Remove product from watch list\n"
+                "`/bestbuy-watchlist` - List all monitored products"
+            ),
+            inline=False,
+        )
+
         # Home Automation Commands
         embed.add_field(
             name="Home Automation",

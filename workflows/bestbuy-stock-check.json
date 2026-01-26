@@ -1,0 +1,268 @@
+{
+  "name": "Best Buy Stock Check",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bestbuy-stock-check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "bestbuy-stock-check"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "document"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "navigate"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "none"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "Fetch Product Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Extract product name from page title or og:title\nlet productName = 'Unknown Product';\nconst ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\nconst titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\nif (ogTitleMatch) {\n  productName = ogTitleMatch[1].replace(' - Best Buy', '').trim();\n} else if (titleMatch) {\n  productName = titleMatch[1].replace(' - Best Buy', '').trim();\n}\n\n// Best Buy stock detection methods\n// Method 1: Check JSON-LD schema (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"') || \n                      html.includes('\"availability\":\"InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"') ||\n                         html.includes('\"availability\":\"OutOfStock\"');\n\n// Method 2: Check button text and availability indicators\nconst hasAddToCart = html.includes('>Add to Cart<') || html.includes('Add to Cart');\nconst hasSoldOut = html.includes('>Sold Out<') || html.includes('Sold Out');\nconst hasComingSoon = html.includes('>Coming Soon<') || html.includes('Coming Soon');\nconst hasCheckStores = html.includes('Check stores');\n\n// Method 3: Check fulfillment data\nconst fulfillmentMatch = html.match(/\"fulfillmentOptions\"\\s*:\\s*\\[([^\\]]+)\\]/);\nlet hasFulfillmentOptions = false;\nif (fulfillmentMatch) {\n  hasFulfillmentOptions = fulfillmentMatch[1].length > 10; // Has actual fulfillment data\n}\n\n// Extract price from JSON-LD schema or page data\nlet price = 'Unknown';\n// Try JSON-LD price first\nconst jsonLdPriceMatch = html.match(/\"price\"\\s*:\\s*\"?(\\d+\\.?\\d*)\"?/);\nconst currencyMatch = html.match(/\"priceCurrency\"\\s*:\\s*\"([A-Z]{3})\"/);\nif (jsonLdPriceMatch) {\n  const amount = parseFloat(jsonLdPriceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine final stock status\n// In stock if: schema says in stock OR (has add to cart AND not explicitly out of stock)\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock && !hasSoldOut && !hasComingSoon);\nconst soldOut = schemaOutOfStock || hasSoldOut || hasComingSoon || (!hasAddToCart && !hasCheckStores);\n\nreturn [{\n  json: {\n    success: true,\n    inStock: inStock,\n    soldOut: soldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: webhookData.url,\n    productName: productName,\n    interval: webhookData.interval,\n    guildId: webhookData.guild_id,\n    logsChannel: webhookData.logs_channel,\n    alertsChannel: webhookData.alerts_channel\n  }\n}];"
+      },
+      "id": "code-check-stock",
+      "name": "Check Stock Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-success",
+      "name": "Check Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "stock-check",
+              "leftValue": "={{ $json.inStock }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-in-stock",
+      "name": "Is In Stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $json.inStock }},\n  \"productName\": \"{{ $json.productName }}\",\n  \"price\": \"{{ $json.price }}\",\n  \"message\": \"{{ $json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $json.productName }} ({{ $json.price }})\"\n}",
+        "options": {}
+      },
+      "id": "respond-in-stock",
+      "name": "Respond In Stock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"inStock\": false,\n  \"productName\": \"{{ $json.productName }}\",\n  \"price\": \"{{ $json.price }}\",\n  \"message\": \"🔴 **Out of Stock** - {{ $json.productName }} ({{ $json.price }})\"\n}",
+        "options": {}
+      },
+      "id": "respond-out-of-stock",
+      "name": "Respond Out of Stock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": true,\n  \"message\": \"Failed to check stock: {{ $json.error }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Product Page": {
+      "main": [
+        [
+          {
+            "node": "Check Stock Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Stock Status": {
+      "main": [
+        [
+          {
+            "node": "Check Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success?": {
+      "main": [
+        [
+          {
+            "node": "Is In Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is In Stock?": {
+      "main": [
+        [
+          {
+            "node": "Respond In Stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Out of Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
