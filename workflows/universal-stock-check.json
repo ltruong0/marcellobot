@@ -1,0 +1,396 @@
+{
+  "name": "Universal Stock Check",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "universal-stock-check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "universal-stock-check"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en;q=0.9"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "http-request",
+      "name": "Fetch Product Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: webhookData.guild_id,\n    logs_channel_id: webhookData.logs_channel_id,\n    alerts_channel_id: webhookData.alerts_channel_id\n  }\n}];"
+      },
+      "id": "prepare-html",
+      "name": "Prepare HTML for Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Stock Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "id": "ollama-model",
+      "name": "Ollama LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [660, 200],
+      "credentials": {
+        "ollamaApi": {
+          "id": "ollama-api",
+          "name": "Ollama API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"inStock\": {\"type\": \"boolean\"},\n    \"productName\": {\"type\": \"string\"},\n    \"price\": {\"type\": \"string\"},\n    \"confidence\": {\"type\": \"string\"},\n    \"reasoning\": {\"type\": \"string\"}\n  },\n  \"required\": [\"inStock\", \"productName\", \"price\"]\n}"
+      },
+      "id": "output-parser",
+      "name": "JSON Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [660, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst preparedData = $('Prepare HTML for Analysis').first().json;\n\n// Parse AI response\nlet aiResponse;\ntry {\n  if (typeof input.output === 'string') {\n    aiResponse = JSON.parse(input.output);\n  } else {\n    aiResponse = input.output || input;\n  }\n} catch (e) {\n  return [{\n    json: {\n      success: false,\n      error: 'Failed to parse AI response',\n      url: preparedData.url\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    success: true,\n    inStock: aiResponse.inStock === true,\n    productName: aiResponse.productName || 'Unknown Product',\n    price: aiResponse.price || 'Unknown',\n    confidence: aiResponse.confidence || 'unknown',\n    reasoning: aiResponse.reasoning || '',\n    url: preparedData.url,\n    guild_id: preparedData.guild_id,\n    logs_channel_id: preparedData.logs_channel_id,\n    alerts_channel_id: preparedData.alerts_channel_id,\n    checkedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "process-result",
+      "name": "Process AI Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-success",
+      "name": "Check Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1100, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "stock-check",
+              "leftValue": "={{ $json.inStock }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-in-stock",
+      "name": "Is In Stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1320, -100]
+    },
+    {
+      "parameters": {
+        "authentication": "botToken",
+        "resource": "message",
+        "operation": "send",
+        "guildId": {
+          "__rl": true,
+          "value": "={{ $json.guild_id }}",
+          "mode": "id"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.alerts_channel_id }}",
+          "mode": "id"
+        },
+        "content": "=🟢 **{{ $json.productName }}** is in stock!\n\n**Price:** {{ $json.price }}\n**Confidence:** {{ $json.confidence }}\n**Link:** {{ $json.url }}\n\n_AI Analysis: {{ $json.reasoning }}_"
+      },
+      "id": "discord-alert",
+      "name": "Discord Stock Alert",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1540, -200],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "MarcelloBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "botToken",
+        "resource": "message",
+        "operation": "send",
+        "guildId": {
+          "__rl": true,
+          "value": "={{ $json.guild_id }}",
+          "mode": "id"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.logs_channel_id }}",
+          "mode": "id"
+        },
+        "content": "=`[Universal Stock Check]` **{{ $json.productName }}**: {{ $json.inStock ? '✓ In Stock' : '✗ Out of Stock' }} ({{ $json.confidence }} confidence)"
+      },
+      "id": "discord-log",
+      "name": "Discord Log",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1760, 0],
+      "credentials": {
+        "discordBotApi": {
+          "id": "discord-bot",
+          "name": "MarcelloBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $json.inStock }},\n  \"productName\": \"{{ $json.productName }}\",\n  \"price\": \"{{ $json.price }}\",\n  \"confidence\": \"{{ $json.confidence }}\",\n  \"message\": \"{{ $json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $json.productName }} ({{ $json.price }})\"\n}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1980, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": true,\n  \"message\": \"Failed to check stock: {{ $json.error }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1320, 100]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Product Page": {
+      "main": [
+        [
+          {
+            "node": "Prepare HTML for Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare HTML for Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Stock Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Stock Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Process AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Stock Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Stock Analyzer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process AI Result": {
+      "main": [
+        [
+          {
+            "node": "Check Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success?": {
+      "main": [
+        [
+          {
+            "node": "Is In Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is In Stock?": {
+      "main": [
+        [
+          {
+            "node": "Discord Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Stock Alert": {
+      "main": [
+        [
+          {
+            "node": "Discord Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Log": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

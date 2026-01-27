@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* add universal AI-powered stock checker using Ollama LLMs
+
 ## v0.7.0 (2026-01-26)
 
 ## [0.7.0](https://github.com/ltruong0/marcellobot/compare/v0.6.0...v0.7.0) (2026-01-26)

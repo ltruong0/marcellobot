@@ -45,6 +45,16 @@ class HelpCommands(commands.Cog):
             inline=False,
         )
 
+        # Universal Stock Checker
+        embed.add_field(
+            name="Universal Stock Checker (AI-Powered)",
+            value=(
+                "`/stock-check <url>` - Check ANY product stock using AI analysis\n"
+                "  Works with any website - analyzes page with Ollama LLM"
+            ),
+            inline=False,
+        )
+
         # Home Automation Commands
         embed.add_field(
             name="Home Automation",

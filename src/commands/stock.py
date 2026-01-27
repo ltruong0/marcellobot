@@ -7,10 +7,11 @@ from ..services import N8NClient
 LOGS_CHANNEL = "logs"
 UBIQUITI_ALERTS_CHANNEL = "ubiquiti-stock-alerts"
 BESTBUY_ALERTS_CHANNEL = "bestbuy-stock-alerts"
+UNIVERSAL_ALERTS_CHANNEL = "stock-alerts"
 
 
 class StockCommands(commands.Cog):
-    """Commands for checking product stock status (Ubiquiti, Best Buy)."""
+    """Commands for checking product stock status (Ubiquiti, Best Buy, Universal)."""
 
     def __init__(self, bot: commands.Bot, n8n: N8NClient):
         self.bot = bot
@@ -432,6 +433,76 @@ class StockCommands(commands.Cog):
 
         except Exception as e:
             await interaction.followup.send(f"Error getting watch list: {e}")
+
+    @app_commands.command(
+        name="stock-check",
+        description="Universal stock checker using AI (works with any website)",
+    )
+    @app_commands.describe(
+        url="URL of any product page to check",
+    )
+    async def check_universal_stock(
+        self,
+        interaction: discord.Interaction,
+        url: str,
+    ):
+        """Check any product stock using AI analysis."""
+        await interaction.response.defer(thinking=True)
+
+        try:
+            # Get channel IDs for n8n to use
+            logs_channel_id, alerts_channel_id = await self.get_channel_ids(
+                interaction.guild, UNIVERSAL_ALERTS_CHANNEL
+            )
+
+            await self.log_to_channel(
+                interaction.guild,
+                f"`[AI Stock Check]` Analyzing <{url}> requested by {interaction.user.mention}",
+            )
+
+            payload = {
+                "url": url,
+                "guild_id": str(interaction.guild_id),
+                "logs_channel_id": logs_channel_id,
+                "alerts_channel_id": alerts_channel_id,
+            }
+
+            result = await self.n8n.trigger_webhook("universal-stock-check", payload)
+
+            if result.get("error"):
+                error_msg = f"Failed to check stock: {result.get('message', 'Unknown error')}"
+                await self.log_to_channel(
+                    interaction.guild, f"`[AI Stock Check]` Error: {error_msg}"
+                )
+                await interaction.followup.send(error_msg)
+                return
+
+            message = result.get("message", "Stock check complete")
+            confidence = result.get("confidence", "unknown")
+
+            await self.log_to_channel(
+                interaction.guild,
+                f"`[AI Stock Check]` {result.get('productName', 'Unknown')}: "
+                f"{'In Stock' if result.get('inStock') else 'Out of Stock'} "
+                f"({confidence} confidence)",
+            )
+
+            # Add confidence indicator to response
+            confidence_emoji = {
+                "high": "✓",
+                "medium": "~",
+                "low": "?",
+            }.get(confidence.lower(), "")
+
+            response_msg = f"{message}\n_Confidence: {confidence} {confidence_emoji}_"
+            await interaction.followup.send(response_msg)
+
+        except Exception as e:
+            error_msg = f"Error checking stock: {e}"
+            await self.log_to_channel(
+                interaction.guild, f"`[AI Stock Check]` Error: {error_msg}"
+            )
+            await interaction.followup.send(error_msg)
 
 
 async def setup(bot: commands.Bot, n8n: N8NClient):
