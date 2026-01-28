@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T22:00:47.258Z",
+  "updatedAt": "2026-01-28T23:23:32.496Z",
   "createdAt": "2026-01-27T02:08:40.849Z",
   "id": "iDxSbZMiCZrFd7sn",
   "name": "Universal Stock Check",
@@ -87,7 +87,6 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           },
@@ -110,7 +109,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\n// Hardcoded Discord IDs\nconst GUILD_ID = '1455288023871656132';\nconst LOGS_CHANNEL_ID = webhookData.logs_channel_id || null; // No default - Discord will be skipped if not provided\nconst STOCK_ALERTS_CHANNEL_ID = '1465975393830834196';\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: GUILD_ID,\n    logs_channel_id: LOGS_CHANNEL_ID,\n    alerts_channel_id: STOCK_ALERTS_CHANNEL_ID,\n    skipDiscord: !LOGS_CHANNEL_ID\n  }\n}];"
+        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\n// Hardcoded Discord IDs\nconst GUILD_ID = '1455288023871656132';\nconst LOGS_CHANNEL_ID = webhookData.logs_channel_id || '1465975393830834196'; // Fallback to stock-alerts if not provided\nconst STOCK_ALERTS_CHANNEL_ID = '1465975393830834196';\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: GUILD_ID,\n    logs_channel_id: LOGS_CHANNEL_ID,\n    alerts_channel_id: STOCK_ALERTS_CHANNEL_ID\n  }\n}];"
       },
       "id": "prepare-html",
       "name": "Prepare HTML for Analysis",
@@ -124,7 +123,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nIMPORTANT RULES:\n- ONLY set inStock=true if you find CLEAR evidence of \"Add to Cart\" or \"Buy Now\" buttons\n- Set inStock=false for ANY of these:\n  * \"Sold Out\"\n  * \"Out of Stock\"\n  * \"Unavailable\"\n  * \"Coming Soon\"\n  * \"Notify Me\"\n  * \"Get Stock Alert\"\n  * \"Check Stores\" (without Add to Cart)\n  * No clear purchase button\n- Check JSON-LD schema for \"OutOfStock\" or \"InStock\" availability\n- When uncertain, ALWAYS default to inStock=false with low confidence\n- Be VERY strict - false positives (saying in stock when out) are worse than false negatives",
+        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
@@ -141,7 +140,7 @@
     },
     {
       "parameters": {
-        "model": "llama3.1:8b",
+        "model": "qwen2.5-coder:7b-instruct-q6_K",
         "options": {}
       },
       "id": "ollama-model",
@@ -160,7 +159,9 @@
       }
     },
     {
-      "parameters": {},
+      "parameters": {
+        "jsonSchema": "{\"type\":\"object\",\"properties\":{\"inStock\":{\"type\":\"boolean\"},\"productName\":{\"type\":\"string\"},\"price\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\",\"enum\":[\"high\",\"medium\",\"low\"]},\"reasoning\":{\"type\":\"string\"}},\"required\":[\"inStock\",\"productName\",\"price\",\"confidence\"]}"
+      },
       "id": "output-parser",
       "name": "JSON Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
@@ -252,13 +253,17 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "={{ $json.guild_id }}",
-          "mode": "id"
+          "value": "1455288023871656132",
+          "mode": "list",
+          "cachedResultName": "Marcello Homelab",
+          "cachedResultUrl": "https://discord.com/channels/1455288023871656132"
         },
         "channelId": {
           "__rl": true,
-          "value": "={{ $json.alerts_channel_id }}",
-          "mode": "id"
+          "value": "1465975393830834196",
+          "mode": "list",
+          "cachedResultName": "stock-alerts",
+          "cachedResultUrl": "https://discord.com/channels/1455288023871656132/1465975393830834196"
         },
         "content": "=🟢 **{{ $json.productName }}** is in stock!\n\n**Price:** {{ $json.price }}\n**Confidence:** {{ $json.confidence }}\n**Link:** {{ $json.url }}\n\n_AI Analysis: {{ $json.reasoning }}_",
         "options": {}
@@ -284,13 +289,17 @@
         "resource": "message",
         "guildId": {
           "__rl": true,
-          "value": "={{ $json.guild_id }}",
-          "mode": "id"
+          "value": "1455288023871656132",
+          "mode": "list",
+          "cachedResultName": "Marcello Homelab",
+          "cachedResultUrl": "https://discord.com/channels/1455288023871656132"
         },
         "channelId": {
           "__rl": true,
-          "value": "={{ $json.logs_channel_id }}",
-          "mode": "id"
+          "value": "1455417524966391944",
+          "mode": "list",
+          "cachedResultName": "logs",
+          "cachedResultUrl": "https://discord.com/channels/1455288023871656132/1455417524966391944"
         },
         "content": "=`[Universal Stock Check]` **{{ $json.productName }}**: {{ $json.inStock ? '✓ In Stock' : '✗ Out of Stock' }} ({{ $json.confidence }} confidence)",
         "options": {}
@@ -487,8 +496,8 @@
   "meta": {
     "templateCredsSetupCompleted": false
   },
-  "activeVersionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
-  "versionCounter": 133,
+  "activeVersionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
+  "versionCounter": 161,
   "shared": [
     {
       "updatedAt": "2026-01-27T02:08:40.851Z",
@@ -548,9 +557,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-01-28T22:00:47.258Z",
-    "createdAt": "2026-01-28T22:00:47.258Z",
-    "versionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
+    "updatedAt": "2026-01-28T23:23:34.000Z",
+    "createdAt": "2026-01-28T23:23:32.497Z",
+    "versionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
     "workflowId": "iDxSbZMiCZrFd7sn",
     "nodes": [
       {
@@ -633,7 +642,6 @@
           "options": {
             "redirect": {
               "redirect": {
-                "followRedirects": true,
                 "maxRedirects": 5
               }
             },
@@ -656,7 +664,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\n// Hardcoded Discord IDs\nconst GUILD_ID = '1455288023871656132';\nconst LOGS_CHANNEL_ID = webhookData.logs_channel_id || null; // No default - Discord will be skipped if not provided\nconst STOCK_ALERTS_CHANNEL_ID = '1465975393830834196';\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: GUILD_ID,\n    logs_channel_id: LOGS_CHANNEL_ID,\n    alerts_channel_id: STOCK_ALERTS_CHANNEL_ID,\n    skipDiscord: !LOGS_CHANNEL_ID\n  }\n}];"
+          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\n// Hardcoded Discord IDs\nconst GUILD_ID = '1455288023871656132';\nconst LOGS_CHANNEL_ID = webhookData.logs_channel_id || '1465975393830834196'; // Fallback to stock-alerts if not provided\nconst STOCK_ALERTS_CHANNEL_ID = '1465975393830834196';\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: GUILD_ID,\n    logs_channel_id: LOGS_CHANNEL_ID,\n    alerts_channel_id: STOCK_ALERTS_CHANNEL_ID\n  }\n}];"
         },
         "id": "prepare-html",
         "name": "Prepare HTML for Analysis",
@@ -670,11 +678,8 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nIMPORTANT RULES:\n- ONLY set inStock=true if you find CLEAR evidence of \"Add to Cart\" or \"Buy Now\" buttons\n- Set inStock=false for ANY of these:\n  * \"Sold Out\"\n  * \"Out of Stock\"\n  * \"Unavailable\"\n  * \"Coming Soon\"\n  * \"Notify Me\"\n  * \"Get Stock Alert\"\n  * \"Check Stores\" (without Add to Cart)\n  * No clear purchase button\n- Check JSON-LD schema for \"OutOfStock\" or \"InStock\" availability\n- When uncertain, ALWAYS default to inStock=false with low confidence\n- Be VERY strict - false positives (saying in stock when out) are worse than false negatives",
-          "hasOutputParser": true,
-          "options": {
-            "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
-          }
+          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
+          "hasOutputParser": true
         },
         "id": "ai-chain",
         "name": "AI Stock Analyzer",
@@ -687,7 +692,7 @@
       },
       {
         "parameters": {
-          "model": "llama3.1:8b",
+          "model": "llama3.2:latest",
           "options": {}
         },
         "id": "ollama-model",
@@ -798,13 +803,17 @@
           "resource": "message",
           "guildId": {
             "__rl": true,
-            "value": "={{ $json.guild_id }}",
-            "mode": "id"
+            "value": "1455288023871656132",
+            "mode": "list",
+            "cachedResultName": "Marcello Homelab",
+            "cachedResultUrl": "https://discord.com/channels/1455288023871656132"
           },
           "channelId": {
             "__rl": true,
-            "value": "={{ $json.alerts_channel_id }}",
-            "mode": "id"
+            "value": "1465975393830834196",
+            "mode": "list",
+            "cachedResultName": "stock-alerts",
+            "cachedResultUrl": "https://discord.com/channels/1455288023871656132/1465975393830834196"
           },
           "content": "=🟢 **{{ $json.productName }}** is in stock!\n\n**Price:** {{ $json.price }}\n**Confidence:** {{ $json.confidence }}\n**Link:** {{ $json.url }}\n\n_AI Analysis: {{ $json.reasoning }}_",
           "options": {}
@@ -830,13 +839,17 @@
           "resource": "message",
           "guildId": {
             "__rl": true,
-            "value": "={{ $json.guild_id }}",
-            "mode": "id"
+            "value": "1455288023871656132",
+            "mode": "list",
+            "cachedResultName": "Marcello Homelab",
+            "cachedResultUrl": "https://discord.com/channels/1455288023871656132"
           },
           "channelId": {
             "__rl": true,
-            "value": "={{ $json.logs_channel_id }}",
-            "mode": "id"
+            "value": "1455417524966391944",
+            "mode": "list",
+            "cachedResultName": "logs",
+            "cachedResultUrl": "https://discord.com/channels/1455288023871656132/1455417524966391944"
           },
           "content": "=`[Universal Stock Check]` **{{ $json.productName }}**: {{ $json.inStock ? '✓ In Stock' : '✗ Out of Stock' }} ({{ $json.confidence }} confidence)",
           "options": {}
@@ -1026,15 +1039,15 @@
       }
     },
     "authors": "Lee Truong",
-    "name": null,
-    "description": null,
-    "autosaved": false,
+    "name": "Version 5338c6c5",
+    "description": "",
+    "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-01-28T22:00:47.307Z",
-        "id": 118,
+        "createdAt": "2026-01-28T23:23:34.537Z",
+        "id": 145,
         "workflowId": "iDxSbZMiCZrFd7sn",
-        "versionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
+        "versionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
         "event": "activated",
         "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
       }

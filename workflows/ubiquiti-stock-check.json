@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T22:00:46.934Z",
+  "updatedAt": "2026-01-28T23:16:56.111Z",
   "createdAt": "2025-12-31T16:03:06.302Z",
   "id": "l3ODSj6xssx0rGMS",
   "name": "Ubiquiti Stock Check",
@@ -247,7 +247,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-  "versionCounter": 61,
+  "versionCounter": 67,
   "shared": [
     {
       "updatedAt": "2025-12-31T16:03:06.310Z",
@@ -663,6 +663,22 @@
       {
         "createdAt": "2026-01-28T22:00:47.005Z",
         "id": 117,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:13:39.284Z",
+        "id": 126,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:16:56.161Z",
+        "id": 135,
         "workflowId": "l3ODSj6xssx0rGMS",
         "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
         "event": "activated",

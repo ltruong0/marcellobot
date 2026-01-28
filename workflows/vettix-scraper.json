@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T22:00:49.076Z",
+  "updatedAt": "2026-01-28T23:16:58.140Z",
   "createdAt": "2025-12-31T20:06:03.663Z",
   "id": "9jvzB315rIB28iGk",
   "name": "VetTix Scraper",
@@ -327,7 +327,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
-  "versionCounter": 51,
+  "versionCounter": 57,
   "shared": [
     {
       "updatedAt": "2025-12-31T20:06:03.669Z",
@@ -815,6 +815,22 @@
       {
         "createdAt": "2026-01-28T22:00:49.122Z",
         "id": 122,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:13:41.229Z",
+        "id": 132,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:16:58.187Z",
+        "id": 141,
         "workflowId": "9jvzB315rIB28iGk",
         "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
         "event": "activated",
