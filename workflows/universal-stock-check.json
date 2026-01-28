@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T07:24:51.673Z",
+  "updatedAt": "2026-01-28T22:00:47.258Z",
   "createdAt": "2026-01-27T02:08:40.849Z",
   "id": "iDxSbZMiCZrFd7sn",
   "name": "Universal Stock Check",
@@ -124,7 +124,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
+        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nIMPORTANT RULES:\n- ONLY set inStock=true if you find CLEAR evidence of \"Add to Cart\" or \"Buy Now\" buttons\n- Set inStock=false for ANY of these:\n  * \"Sold Out\"\n  * \"Out of Stock\"\n  * \"Unavailable\"\n  * \"Coming Soon\"\n  * \"Notify Me\"\n  * \"Get Stock Alert\"\n  * \"Check Stores\" (without Add to Cart)\n  * No clear purchase button\n- Check JSON-LD schema for \"OutOfStock\" or \"InStock\" availability\n- When uncertain, ALWAYS default to inStock=false with low confidence\n- Be VERY strict - false positives (saying in stock when out) are worse than false negatives",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
@@ -487,8 +487,8 @@
   "meta": {
     "templateCredsSetupCompleted": false
   },
-  "activeVersionId": "b3842c81-223e-4861-a011-695c2dcd34f9",
-  "versionCounter": 10,
+  "activeVersionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
+  "versionCounter": 133,
   "shared": [
     {
       "updatedAt": "2026-01-27T02:08:40.851Z",
@@ -548,9 +548,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-01-28T07:25:05.000Z",
-    "createdAt": "2026-01-28T07:24:51.674Z",
-    "versionId": "b3842c81-223e-4861-a011-695c2dcd34f9",
+    "updatedAt": "2026-01-28T22:00:47.258Z",
+    "createdAt": "2026-01-28T22:00:47.258Z",
+    "versionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
     "workflowId": "iDxSbZMiCZrFd7sn",
     "nodes": [
       {
@@ -582,20 +582,67 @@
               },
               {
                 "name": "accept",
-                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
               },
               {
                 "name": "accept-language",
                 "value": "en-US,en;q=0.9"
+              },
+              {
+                "name": "accept-encoding",
+                "value": "gzip, deflate, br"
+              },
+              {
+                "name": "cache-control",
+                "value": "max-age=0"
+              },
+              {
+                "name": "sec-ch-ua",
+                "value": "\"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\", \"Not-A.Brand\";v=\"99\""
+              },
+              {
+                "name": "sec-ch-ua-mobile",
+                "value": "?0"
+              },
+              {
+                "name": "sec-ch-ua-platform",
+                "value": "\"macOS\""
+              },
+              {
+                "name": "sec-fetch-dest",
+                "value": "document"
+              },
+              {
+                "name": "sec-fetch-mode",
+                "value": "navigate"
+              },
+              {
+                "name": "sec-fetch-site",
+                "value": "none"
+              },
+              {
+                "name": "sec-fetch-user",
+                "value": "?1"
+              },
+              {
+                "name": "upgrade-insecure-requests",
+                "value": "1"
               }
             ]
           },
           "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": true,
+                "maxRedirects": 5
+              }
+            },
             "response": {
               "response": {
                 "responseFormat": "text"
               }
-            }
+            },
+            "timeout": 30000
           }
         },
         "id": "http-request",
@@ -609,7 +656,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: webhookData.guild_id,\n    logs_channel_id: webhookData.logs_channel_id,\n    alerts_channel_id: webhookData.alerts_channel_id\n  }\n}];"
+          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nlet html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Truncate HTML to reasonable size for LLM (keep first 50000 chars)\nif (html.length > 50000) {\n  html = html.substring(0, 50000);\n}\n\n// Hardcoded Discord IDs\nconst GUILD_ID = '1455288023871656132';\nconst LOGS_CHANNEL_ID = webhookData.logs_channel_id || '1465975393830834196'; // Fallback to stock-alerts if not provided\nconst STOCK_ALERTS_CHANNEL_ID = '1465975393830834196';\n\nreturn [{\n  json: {\n    html: html,\n    url: webhookData.url,\n    guild_id: GUILD_ID,\n    logs_channel_id: LOGS_CHANNEL_ID,\n    alerts_channel_id: STOCK_ALERTS_CHANNEL_ID\n  }\n}];"
         },
         "id": "prepare-html",
         "name": "Prepare HTML for Analysis",
@@ -623,16 +670,16 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
+          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nIMPORTANT RULES:\n- ONLY set inStock=true if you find CLEAR evidence of \"Add to Cart\" or \"Buy Now\" buttons\n- Set inStock=false for ANY of these:\n  * \"Sold Out\"\n  * \"Out of Stock\"\n  * \"Unavailable\"\n  * \"Coming Soon\"\n  * \"Notify Me\"\n  * \"Get Stock Alert\"\n  * \"Check Stores\" (without Add to Cart)\n  * No clear purchase button\n- Check JSON-LD schema for \"OutOfStock\" or \"InStock\" availability\n- When uncertain, ALWAYS default to inStock=false with low confidence\n- Be VERY strict - false positives (saying in stock when out) are worse than false negatives",
           "hasOutputParser": true,
           "options": {
             "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
           }
         },
-        "id": "ai-agent",
+        "id": "ai-chain",
         "name": "AI Stock Analyzer",
-        "type": "@n8n/n8n-nodes-langchain.agent",
-        "typeVersion": 1.7,
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.4,
         "position": [
           672,
           0
@@ -640,7 +687,7 @@
       },
       {
         "parameters": {
-          "model": "llama3.2:latest",
+          "model": "llama3.1:8b",
           "options": {}
         },
         "id": "ollama-model",
@@ -979,15 +1026,15 @@
       }
     },
     "authors": "Lee Truong",
-    "name": "Version b3842c81",
-    "description": "",
-    "autosaved": true,
+    "name": null,
+    "description": null,
+    "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-01-28T07:25:05.810Z",
-        "id": 67,
+        "createdAt": "2026-01-28T22:00:47.307Z",
+        "id": 118,
         "workflowId": "iDxSbZMiCZrFd7sn",
-        "versionId": "b3842c81-223e-4861-a011-695c2dcd34f9",
+        "versionId": "15e885a4-d7f5-49c9-81df-034fc7bc6fc0",
         "event": "activated",
         "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
       }
