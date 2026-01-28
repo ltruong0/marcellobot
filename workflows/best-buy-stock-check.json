@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-01-27T02:08:40.173Z",
-  "createdAt": "2025-12-31T16:03:06.302Z",
-  "id": "l3ODSj6xssx0rGMS",
-  "name": "Ubiquiti Stock Check",
+  "updatedAt": "2026-01-27T02:08:38.822Z",
+  "createdAt": "2026-01-26T03:52:49.560Z",
+  "id": "bNkrcNUHQfESa8ek",
+  "name": "Best Buy Stock Check",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -10,7 +10,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "ubiquiti-stock-check",
+        "path": "bestbuy-stock-check",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -22,11 +22,40 @@
         0,
         0
       ],
-      "webhookId": "ubiquiti-stock-check"
+      "webhookId": "bestbuy-stock-check"
     },
     {
       "parameters": {
         "url": "={{ $json.body.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "document"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "navigate"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "none"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
@@ -46,7 +75,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Extract product name from page title or og:title\nlet productName = 'Unknown Product';\nconst titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\nconst ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\nif (ogTitleMatch) {\n  productName = ogTitleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n} else if (titleMatch) {\n  productName = titleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n}\n\n// Primary check: schema.org availability (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"');\n\n// Secondary checks\nconst hasAddToCart = html.includes('>Add to Cart<');\nconst hasSoldOut = html.includes('>Sold Out<');\n\n// Extract price from JSON-LD schema\nlet price = 'Unknown';\nconst priceMatch = html.match(/\"price\":(\\d+(?:\\.\\d+)?)/); \nconst currencyMatch = html.match(/\"priceCurrency\":\"([A-Z]+)\"/);\nif (priceMatch) {\n  const amount = parseFloat(priceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine stock status\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock);\nconst soldOut = schemaOutOfStock || (hasSoldOut && !schemaInStock);\n\nreturn [{\n  json: {\n    success: true,\n    inStock: inStock,\n    soldOut: soldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: webhookData.url,\n    productName: productName,\n    interval: webhookData.interval,\n    guildId: webhookData.guild_id,\n    logsChannel: webhookData.logs_channel,\n    alertsChannel: webhookData.alerts_channel\n  }\n}];"
+        "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Extract product name from page title or og:title\nlet productName = 'Unknown Product';\nconst ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\nconst titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\nif (ogTitleMatch) {\n  productName = ogTitleMatch[1].replace(' - Best Buy', '').trim();\n} else if (titleMatch) {\n  productName = titleMatch[1].replace(' - Best Buy', '').trim();\n}\n\n// Best Buy stock detection methods\n// Method 1: Check JSON-LD schema (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"') || \n                      html.includes('\"availability\":\"InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"') ||\n                         html.includes('\"availability\":\"OutOfStock\"');\n\n// Method 2: Check button text and availability indicators\nconst hasAddToCart = html.includes('>Add to Cart<') || html.includes('Add to Cart');\nconst hasSoldOut = html.includes('>Sold Out<') || html.includes('Sold Out');\nconst hasComingSoon = html.includes('>Coming Soon<') || html.includes('Coming Soon');\nconst hasCheckStores = html.includes('Check stores');\n\n// Method 3: Check fulfillment data\nconst fulfillmentMatch = html.match(/\"fulfillmentOptions\"\\s*:\\s*\\[([^\\]]+)\\]/);\nlet hasFulfillmentOptions = false;\nif (fulfillmentMatch) {\n  hasFulfillmentOptions = fulfillmentMatch[1].length > 10; // Has actual fulfillment data\n}\n\n// Extract price from JSON-LD schema or page data\nlet price = 'Unknown';\n// Try JSON-LD price first\nconst jsonLdPriceMatch = html.match(/\"price\"\\s*:\\s*\"?(\\d+\\.?\\d*)\"?/);\nconst currencyMatch = html.match(/\"priceCurrency\"\\s*:\\s*\"([A-Z]{3})\"/);\nif (jsonLdPriceMatch) {\n  const amount = parseFloat(jsonLdPriceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine final stock status\n// In stock if: schema says in stock OR (has add to cart AND not explicitly out of stock)\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock && !hasSoldOut && !hasComingSoon);\nconst soldOut = schemaOutOfStock || hasSoldOut || hasComingSoon || (!hasAddToCart && !hasCheckStores);\n\nreturn [{\n  json: {\n    success: true,\n    inStock: inStock,\n    soldOut: soldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: webhookData.url,\n    productName: productName,\n    interval: webhookData.interval,\n    guildId: webhookData.guild_id,\n    logsChannel: webhookData.logs_channel,\n    alertsChannel: webhookData.alerts_channel\n  }\n}];"
       },
       "id": "code-check-stock",
       "name": "Check Stock Status",
@@ -246,14 +275,14 @@
   "meta": {
     "templateCredsSetupCompleted": false
   },
-  "activeVersionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-  "versionCounter": 46,
+  "activeVersionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+  "versionCounter": 7,
   "shared": [
     {
-      "updatedAt": "2025-12-31T16:03:06.310Z",
-      "createdAt": "2025-12-31T16:03:06.310Z",
+      "updatedAt": "2026-01-26T03:52:49.623Z",
+      "createdAt": "2026-01-26T03:52:49.623Z",
       "role": "workflow:owner",
-      "workflowId": "l3ODSj6xssx0rGMS",
+      "workflowId": "bNkrcNUHQfESa8ek",
       "projectId": "9PluwpnSgpfsJVgg",
       "project": {
         "updatedAt": "2025-12-28T01:37:43.910Z",
@@ -307,15 +336,15 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2025-12-31T17:10:19.000Z",
-    "createdAt": "2025-12-31T17:10:13.799Z",
-    "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-    "workflowId": "l3ODSj6xssx0rGMS",
+    "updatedAt": "2026-01-26T04:21:19.000Z",
+    "createdAt": "2026-01-26T03:52:49.635Z",
+    "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+    "workflowId": "bNkrcNUHQfESa8ek",
     "nodes": [
       {
         "parameters": {
           "httpMethod": "POST",
-          "path": "ubiquiti-stock-check",
+          "path": "bestbuy-stock-check",
           "responseMode": "responseNode",
           "options": {}
         },
@@ -327,11 +356,40 @@
           0,
           0
         ],
-        "webhookId": "ubiquiti-stock-check"
+        "webhookId": "bestbuy-stock-check"
       },
       {
         "parameters": {
           "url": "={{ $json.body.url }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "user-agent",
+                "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+              },
+              {
+                "name": "accept",
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+              },
+              {
+                "name": "accept-language",
+                "value": "en-US,en;q=0.9"
+              },
+              {
+                "name": "sec-fetch-dest",
+                "value": "document"
+              },
+              {
+                "name": "sec-fetch-mode",
+                "value": "navigate"
+              },
+              {
+                "name": "sec-fetch-site",
+                "value": "none"
+              }
+            ]
+          },
           "options": {
             "response": {
               "response": {
@@ -351,7 +409,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Extract product name from page title or og:title\nlet productName = 'Unknown Product';\nconst titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\nconst ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\nif (ogTitleMatch) {\n  productName = ogTitleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n} else if (titleMatch) {\n  productName = titleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n}\n\n// Primary check: schema.org availability (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"');\n\n// Secondary checks\nconst hasAddToCart = html.includes('>Add to Cart<');\nconst hasSoldOut = html.includes('>Sold Out<');\n\n// Extract price from JSON-LD schema\nlet price = 'Unknown';\nconst priceMatch = html.match(/\"price\":(\\d+(?:\\.\\d+)?)/); \nconst currencyMatch = html.match(/\"priceCurrency\":\"([A-Z]+)\"/);\nif (priceMatch) {\n  const amount = parseFloat(priceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine stock status\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock);\nconst soldOut = schemaOutOfStock || (hasSoldOut && !schemaInStock);\n\nreturn [{\n  json: {\n    success: true,\n    inStock: inStock,\n    soldOut: soldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: webhookData.url,\n    productName: productName,\n    interval: webhookData.interval,\n    guildId: webhookData.guild_id,\n    logsChannel: webhookData.logs_channel,\n    alertsChannel: webhookData.alerts_channel\n  }\n}];"
+          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      success: false,\n      error: 'Could not fetch product page',\n      url: webhookData.url\n    }\n  }];\n}\n\n// Extract product name from page title or og:title\nlet productName = 'Unknown Product';\nconst ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\nconst titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\nif (ogTitleMatch) {\n  productName = ogTitleMatch[1].replace(' - Best Buy', '').trim();\n} else if (titleMatch) {\n  productName = titleMatch[1].replace(' - Best Buy', '').trim();\n}\n\n// Best Buy stock detection methods\n// Method 1: Check JSON-LD schema (most reliable)\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"') || \n                      html.includes('\"availability\":\"InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"') ||\n                         html.includes('\"availability\":\"OutOfStock\"');\n\n// Method 2: Check button text and availability indicators\nconst hasAddToCart = html.includes('>Add to Cart<') || html.includes('Add to Cart');\nconst hasSoldOut = html.includes('>Sold Out<') || html.includes('Sold Out');\nconst hasComingSoon = html.includes('>Coming Soon<') || html.includes('Coming Soon');\nconst hasCheckStores = html.includes('Check stores');\n\n// Method 3: Check fulfillment data\nconst fulfillmentMatch = html.match(/\"fulfillmentOptions\"\\s*:\\s*\\[([^\\]]+)\\]/);\nlet hasFulfillmentOptions = false;\nif (fulfillmentMatch) {\n  hasFulfillmentOptions = fulfillmentMatch[1].length > 10; // Has actual fulfillment data\n}\n\n// Extract price from JSON-LD schema or page data\nlet price = 'Unknown';\n// Try JSON-LD price first\nconst jsonLdPriceMatch = html.match(/\"price\"\\s*:\\s*\"?(\\d+\\.?\\d*)\"?/);\nconst currencyMatch = html.match(/\"priceCurrency\"\\s*:\\s*\"([A-Z]{3})\"/);\nif (jsonLdPriceMatch) {\n  const amount = parseFloat(jsonLdPriceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\n// Determine final stock status\n// In stock if: schema says in stock OR (has add to cart AND not explicitly out of stock)\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock && !hasSoldOut && !hasComingSoon);\nconst soldOut = schemaOutOfStock || hasSoldOut || hasComingSoon || (!hasAddToCart && !hasCheckStores);\n\nreturn [{\n  json: {\n    success: true,\n    inStock: inStock,\n    soldOut: soldOut,\n    price: price,\n    checkedAt: new Date().toISOString(),\n    productUrl: webhookData.url,\n    productName: productName,\n    interval: webhookData.interval,\n    guildId: webhookData.guild_id,\n    logsChannel: webhookData.logs_channel,\n    alertsChannel: webhookData.alerts_channel\n  }\n}];"
         },
         "id": "code-check-stock",
         "name": "Check Stock Status",
@@ -544,87 +602,23 @@
       }
     },
     "authors": "Lee Truong",
-    "name": "Version a10a1478",
+    "name": "Version 1981843d",
     "description": "",
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2025-12-31T17:10:19.505Z",
-        "id": 15,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "createdAt": "2026-01-26T04:21:19.825Z",
+        "id": 58,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
         "event": "activated",
         "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
       },
       {
-        "createdAt": "2025-12-31T17:13:17.438Z",
-        "id": 18,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2025-12-31T20:06:02.740Z",
-        "id": 20,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-04T18:39:05.751Z",
-        "id": 26,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-04T19:53:36.724Z",
-        "id": 29,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-04T20:03:17.807Z",
-        "id": 32,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-04T20:53:07.007Z",
-        "id": 37,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-04T21:02:41.487Z",
-        "id": 45,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-26T03:52:50.741Z",
-        "id": 53,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-        "event": "activated",
-        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
-      },
-      {
-        "createdAt": "2026-01-27T02:08:40.290Z",
-        "id": 61,
-        "workflowId": "l3ODSj6xssx0rGMS",
-        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "createdAt": "2026-01-27T02:08:38.992Z",
+        "id": 60,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
         "event": "activated",
         "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
       }

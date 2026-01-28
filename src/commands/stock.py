@@ -46,6 +46,11 @@ class StockCommands(commands.Cog):
         alerts_channel = await self.get_or_create_channel(guild, alerts_channel_name)
         return str(logs_channel.id), str(alerts_channel.id)
 
+    async def get_logs_channel_id(self, guild: discord.Guild) -> str:
+        """Get or create the logs channel, return its ID."""
+        logs_channel = await self.get_or_create_channel(guild, LOGS_CHANNEL)
+        return str(logs_channel.id)
+
     @app_commands.command(
         name="ubiquiti-stock", description="Check Ubiquiti product stock"
     )
@@ -450,10 +455,8 @@ class StockCommands(commands.Cog):
         await interaction.response.defer(thinking=True)
 
         try:
-            # Get channel IDs for n8n to use
-            logs_channel_id, alerts_channel_id = await self.get_channel_ids(
-                interaction.guild, UNIVERSAL_ALERTS_CHANNEL
-            )
+            # Get logs channel ID for n8n to use
+            logs_channel_id = await self.get_logs_channel_id(interaction.guild)
 
             await self.log_to_channel(
                 interaction.guild,
@@ -462,9 +465,7 @@ class StockCommands(commands.Cog):
 
             payload = {
                 "url": url,
-                "guild_id": str(interaction.guild_id),
                 "logs_channel_id": logs_channel_id,
-                "alerts_channel_id": alerts_channel_id,
             }
 
             result = await self.n8n.trigger_webhook("universal-stock-check", payload)
@@ -479,13 +480,6 @@ class StockCommands(commands.Cog):
 
             message = result.get("message", "Stock check complete")
             confidence = result.get("confidence", "unknown")
-
-            await self.log_to_channel(
-                interaction.guild,
-                f"`[AI Stock Check]` {result.get('productName', 'Unknown')}: "
-                f"{'In Stock' if result.get('inStock') else 'Out of Stock'} "
-                f"({confidence} confidence)",
-            )
 
             # Add confidence indicator to response
             confidence_emoji = {
@@ -503,6 +497,136 @@ class StockCommands(commands.Cog):
                 interaction.guild, f"`[AI Stock Check]` Error: {error_msg}"
             )
             await interaction.followup.send(error_msg)
+
+    @app_commands.command(
+        name="stock-watch", description="Add any product to AI-powered watch list"
+    )
+    @app_commands.describe(
+        url="URL of any product page to monitor",
+        interval="Check interval in minutes (default: 5)",
+    )
+    async def add_universal_to_watch_list(
+        self,
+        interaction: discord.Interaction,
+        url: str,
+        interval: int = 5,
+    ):
+        """Add any product to the universal AI stock watch list."""
+        await interaction.response.defer(thinking=True)
+
+        try:
+            # Get channel IDs for n8n to use
+            logs_channel_id, alerts_channel_id = await self.get_channel_ids(
+                interaction.guild, UNIVERSAL_ALERTS_CHANNEL
+            )
+
+            await self.log_to_channel(
+                interaction.guild,
+                f"`[Universal Watch]` Adding <{url}> (every {interval}m) by {interaction.user.mention}",
+            )
+
+            payload = {
+                "action": "add",
+                "url": url,
+                "interval_minutes": interval,
+                "guild_id": str(interaction.guild_id),
+                "added_by": str(interaction.user),
+                "logs_channel_id": logs_channel_id,
+                "alerts_channel_id": alerts_channel_id,
+            }
+
+            result = await self.n8n.trigger_webhook("universal-stock-watch", payload)
+
+            if result.get("error"):
+                error_msg = f"Failed to add to watch list: {result.get('message', 'Unknown error')}"
+                await self.log_to_channel(
+                    interaction.guild, f"`[Universal Watch]` Error: {error_msg}"
+                )
+                await interaction.followup.send(error_msg)
+                return
+
+            await interaction.followup.send(
+                f"Added to AI watch list. Checking every {interval} minutes."
+            )
+
+        except Exception as e:
+            error_msg = f"Error adding to watch list: {e}"
+            await self.log_to_channel(
+                interaction.guild, f"`[Universal Watch]` Error: {error_msg}"
+            )
+            await interaction.followup.send(error_msg)
+
+    @app_commands.command(
+        name="stock-unwatch",
+        description="Remove a product from AI-powered watch list",
+    )
+    @app_commands.describe(
+        url="URL of the product to stop monitoring",
+    )
+    async def remove_universal_from_watch_list(
+        self,
+        interaction: discord.Interaction,
+        url: str,
+    ):
+        """Remove a product from the universal AI stock watch list."""
+        await interaction.response.defer(thinking=True)
+
+        try:
+            await self.log_to_channel(
+                interaction.guild,
+                f"`[Universal Watch]` Removing <{url}> by {interaction.user.mention}",
+            )
+
+            payload = {
+                "action": "remove",
+                "url": url,
+                "guild_id": str(interaction.guild_id),
+            }
+
+            result = await self.n8n.trigger_webhook("universal-stock-watch", payload)
+
+            if result.get("error"):
+                error_msg = f"Failed to remove from watch list: {result.get('message', 'Unknown error')}"
+                await self.log_to_channel(
+                    interaction.guild, f"`[Universal Watch]` Error: {error_msg}"
+                )
+                await interaction.followup.send(error_msg)
+                return
+
+            await interaction.followup.send(f"Removed from AI watch list.")
+
+        except Exception as e:
+            error_msg = f"Error removing from watch list: {e}"
+            await self.log_to_channel(
+                interaction.guild, f"`[Universal Watch]` Error: {error_msg}"
+            )
+            await interaction.followup.send(error_msg)
+
+    @app_commands.command(
+        name="stock-watchlist", description="List all AI-monitored products"
+    )
+    async def list_universal_watch_list(self, interaction: discord.Interaction):
+        """List all products in the universal AI stock watch list."""
+        await interaction.response.defer(thinking=True)
+
+        try:
+            payload = {
+                "action": "list",
+                "guild_id": str(interaction.guild_id),
+            }
+
+            result = await self.n8n.trigger_webhook("universal-stock-watch", payload)
+
+            if result.get("error"):
+                error_msg = f"Failed to get watch list: {result.get('message', 'Unknown error')}"
+                await interaction.followup.send(error_msg)
+                return
+
+            message = result.get("message", "No products in watch list")
+            await interaction.followup.send(message)
+
+        except Exception as e:
+            await interaction.followup.send(f"Error getting watch list: {e}")
 
 
 async def setup(bot: commands.Bot, n8n: N8NClient):

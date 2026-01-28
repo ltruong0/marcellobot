@@ -1,11 +1,6 @@
 {
-  "updatedAt": "2026-01-27T02:08:42.154Z",
-  "createdAt": "2025-12-31T16:03:06.585Z",
-  "id": "aSgFrcEyxgsCyjxz",
-  "name": "Ubiquiti Stock Monitor",
-  "description": null,
-  "active": false,
-  "isArchived": false,
+  "name": "Universal Stock Monitor",
+  "active": true,
   "nodes": [
     {
       "parameters": {
@@ -22,15 +17,12 @@
       "name": "Every Minute",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [
-        0,
-        300
-      ]
+      "position": [0, 300]
     },
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "ubiquiti-stock-watch",
+        "path": "universal-stock-watch",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -38,11 +30,8 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        0,
-        0
-      ],
-      "webhookId": "ubiquiti-stock-watch"
+      "position": [0, 0],
+      "webhookId": "universal-stock-watch"
     },
     {
       "parameters": {
@@ -52,10 +41,7 @@
       "name": "Manage Watch List",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        220,
-        0
-      ]
+      "position": [220, 0]
     },
     {
       "parameters": {
@@ -67,10 +53,7 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        440,
-        0
-      ]
+      "position": [440, 0]
     },
     {
       "parameters": {
@@ -80,10 +63,7 @@
       "name": "Get Products to Check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        220,
-        300
-      ]
+      "position": [220, 300]
     },
     {
       "parameters": {
@@ -112,43 +92,48 @@
       "name": "Has Products?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        440,
-        300
-      ]
+      "position": [440, 300]
     },
     {
       "parameters": {
-        "url": "={{ $json.url }}",
+        "method": "POST",
+        "url": "https://workflows.marcellolab.com/webhook/universal-stock-check",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "logs_channel_id",
+              "value": "={{ $json.logs_channel_id }}"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
-              "responseFormat": "text"
+              "responseFormat": "json"
             }
           }
         }
       },
-      "id": "http-request",
-      "name": "Fetch Product Page",
+      "id": "call-stock-check",
+      "name": "Call Universal Stock Check",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        660,
-        200
-      ]
+      "position": [660, 200]
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst productData = $('Get Products to Check').first().json;\n\n// Get HTML from response\nconst html = input.data || input.body || (typeof input === 'string' ? input : '');\n\nif (!html || typeof html !== 'string') {\n  return [{\n    json: {\n      ...productData,\n      success: false,\n      error: 'Could not fetch product page'\n    }\n  }];\n}\n\n// Extract product name from page if not set\nlet productName = productData.product_name;\nif (!productName || productName === 'Unknown Product') {\n  const ogTitleMatch = html.match(/property=\"og:title\"\\s+content=\"([^\"]+)\"/i);\n  const titleMatch = html.match(/<title>([^<]+)<\\/title>/i);\n  if (ogTitleMatch) {\n    productName = ogTitleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n  } else if (titleMatch) {\n    productName = titleMatch[1].replace(' – Ubiquiti Store USA', '').trim();\n  }\n}\n\n// Check stock status\nconst schemaInStock = html.includes('\"availability\":\"https://schema.org/InStock\"');\nconst schemaOutOfStock = html.includes('\"availability\":\"https://schema.org/OutOfStock\"');\nconst hasAddToCart = html.includes('>Add to Cart<');\nconst hasSoldOut = html.includes('>Sold Out<');\n\n// Extract price\nlet price = 'Unknown';\nconst priceMatch = html.match(/\"price\":(\\d+(?:\\.\\d+)?)/); \nconst currencyMatch = html.match(/\"priceCurrency\":\"([A-Z]+)\"/);\nif (priceMatch) {\n  const amount = parseFloat(priceMatch[1]);\n  const currency = currencyMatch ? currencyMatch[1] : 'USD';\n  price = currency === 'USD' ? `$${amount.toFixed(2)}` : `${amount.toFixed(2)} ${currency}`;\n}\n\nconst inStock = schemaInStock || (hasAddToCart && !schemaOutOfStock);\nconst wasInStock = productData.last_in_stock === true || productData.last_in_stock === 'true';\nconst sendAlert = inStock && !wasInStock;\n\nreturn [{\n  json: {\n    ...productData,\n    success: true,\n    product_name: productName,\n    inStock: inStock,\n    wasInStock: wasInStock,\n    sendAlert: sendAlert,\n    price: price,\n    checkedAt: new Date().toISOString()\n  }\n}];"
+        "jsCode": "const stockResult = $input.first().json;\nconst productData = $('Get Products to Check').first().json;\n\nif (!stockResult.success) {\n  return [{\n    json: {\n      ...productData,\n      success: false,\n      error: stockResult.message || 'Stock check failed'\n    }\n  }];\n}\n\nconst inStock = stockResult.inStock === true;\nconst wasInStock = productData.last_in_stock === true || productData.last_in_stock === 'true';\nconst sendAlert = inStock && !wasInStock;\n\nreturn [{\n  json: {\n    ...productData,\n    success: true,\n    product_name: stockResult.productName || productData.product_name,\n    inStock: inStock,\n    wasInStock: wasInStock,\n    sendAlert: sendAlert,\n    price: stockResult.price || 'Unknown',\n    confidence: stockResult.confidence || 'unknown',\n    reasoning: stockResult.reasoning || '',\n    checkedAt: new Date().toISOString()\n  }\n}];"
       },
-      "id": "check-stock",
-      "name": "Check Stock Status",
+      "id": "process-result",
+      "name": "Process Stock Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        880,
-        200
-      ]
+      "position": [880, 200]
     },
     {
       "parameters": {
@@ -158,10 +143,7 @@
       "name": "Update Last Checked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1100,
-        200
-      ]
+      "position": [1100, 200]
     },
     {
       "parameters": {
@@ -190,10 +172,7 @@
       "name": "Send Alert?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1320,
-        200
-      ]
+      "position": [1320, 200]
     },
     {
       "parameters": {
@@ -207,22 +186,19 @@
         },
         "channelId": {
           "__rl": true,
-          "value": "={{ $json.alerts_channel_id }}",
+          "value": "1465975393830834196",
           "mode": "id"
         },
-        "content": "=🟢 **{{ $json.product_name }}** is back in stock!\n\n**Price:** {{ $json.price }}\n**Link:** {{ $json.url }}"
+        "content": "=🟢 **{{ $json.product_name }}** is back in stock!\n\n**Price:** {{ $json.price }}\n**Confidence:** {{ $json.confidence }}\n**Link:** {{ $json.url }}\n\n_AI Analysis: {{ $json.reasoning }}_"
       },
       "id": "discord-alert",
       "name": "Discord Stock Alert",
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
-      "position": [
-        1540,
-        100
-      ],
+      "position": [1540, 100],
       "credentials": {
         "discordBotApi": {
-          "id": "V3BxUuJIGjCULqBN",
+          "id": "discord-bot",
           "name": "MarcelloBot"
         }
       }
@@ -242,19 +218,16 @@
           "value": "={{ $json.logs_channel_id }}",
           "mode": "id"
         },
-        "content": "=`[Stock Monitor]` Checked **{{ $json.product_name }}**: {{ $json.inStock ? 'In Stock ✓' : 'Out of Stock' }}"
+        "content": "=`[Universal Stock Monitor]` Checked **{{ $json.product_name }}**: {{ $json.inStock ? 'In Stock ✓' : 'Out of Stock' }} ({{ $json.confidence }} confidence)"
       },
       "id": "discord-log",
       "name": "Discord Log",
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
-      "position": [
-        1540,
-        300
-      ],
+      "position": [1540, 300],
       "credentials": {
         "discordBotApi": {
-          "id": "V3BxUuJIGjCULqBN",
+          "id": "discord-bot",
           "name": "MarcelloBot"
         }
       }
@@ -309,7 +282,7 @@
       "main": [
         [
           {
-            "node": "Fetch Product Page",
+            "node": "Call Universal Stock Check",
             "type": "main",
             "index": 0
           }
@@ -317,18 +290,18 @@
         []
       ]
     },
-    "Fetch Product Page": {
+    "Call Universal Stock Check": {
       "main": [
         [
           {
-            "node": "Check Stock Status",
+            "node": "Process Stock Result",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Check Stock Status": {
+    "Process Stock Result": {
       "main": [
         [
           {
@@ -381,72 +354,6 @@
     }
   },
   "settings": {
-    "executionOrder": "v1",
-    "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
-  },
-  "meta": {
-    "templateCredsSetupCompleted": false
-  },
-  "activeVersionId": null,
-  "versionCounter": 62,
-  "shared": [
-    {
-      "updatedAt": "2025-12-31T16:03:06.586Z",
-      "createdAt": "2025-12-31T16:03:06.586Z",
-      "role": "workflow:owner",
-      "workflowId": "aSgFrcEyxgsCyjxz",
-      "projectId": "9PluwpnSgpfsJVgg",
-      "project": {
-        "updatedAt": "2025-12-28T01:37:43.910Z",
-        "createdAt": "2025-12-28T01:35:40.066Z",
-        "id": "9PluwpnSgpfsJVgg",
-        "name": "Lee Truong <lee.t.truong@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
-        "projectRelations": [
-          {
-            "updatedAt": "2025-12-28T01:35:40.067Z",
-            "createdAt": "2025-12-28T01:35:40.067Z",
-            "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
-            "projectId": "9PluwpnSgpfsJVgg",
-            "user": {
-              "updatedAt": "2026-01-28T07:20:46.000Z",
-              "createdAt": "2025-12-28T01:35:38.819Z",
-              "id": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
-              "email": "lee.t.truong@gmail.com",
-              "firstName": "Lee",
-              "lastName": "Truong",
-              "personalizationAnswers": {
-                "version": "v4",
-                "personalization_survey_submitted_at": "2025-12-28T01:37:56.518Z",
-                "personalization_survey_n8n_version": "2.1.4",
-                "companyType": "personal",
-                "reportedSource": "other",
-                "reportedSourceOther": "Reddit"
-              },
-              "settings": {
-                "userActivated": true,
-                "firstSuccessfulWorkflowId": "HjMS6wKFEuMHakM7",
-                "userActivatedAt": 1767045606046,
-                "easyAIWorkflowOnboarded": true,
-                "npsSurvey": {
-                  "responded": true,
-                  "lastShownAt": 1769392857656
-                }
-              },
-              "disabled": false,
-              "mfaEnabled": false,
-              "lastActiveAt": "2026-01-28",
-              "isPending": false
-            }
-          }
-        ]
-      }
-    }
-  ],
-  "tags": [],
-  "activeVersion": null
+    "executionOrder": "v1"
+  }
 }

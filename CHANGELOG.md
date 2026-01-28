@@ -5,6 +5,8 @@
 ### Features
 
 * add universal AI-powered stock checker using Ollama LLMs
+* add universal stock monitor with watch list management
+* add Discord commands for universal stock checking (/stock-check, /stock-watch, /stock-unwatch, /stock-watchlist)
 
 ## v0.7.0 (2026-01-26)
 

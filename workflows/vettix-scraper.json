@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-01-27T02:08:42.619Z",
+  "createdAt": "2025-12-31T20:06:03.663Z",
+  "id": "9jvzB315rIB28iGk",
   "name": "VetTix Scraper",
+  "description": null,
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -12,7 +18,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "webhookId": "vettix-scraper"
     },
     {
@@ -30,7 +39,10 @@
       "name": "Scrape VetTix",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [220, 0]
+      "position": [
+        220,
+        0
+      ]
     },
     {
       "parameters": {
@@ -40,7 +52,10 @@
       "name": "Format Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 0]
+      "position": [
+        440,
+        0
+      ]
     },
     {
       "parameters": {
@@ -69,7 +84,10 @@
       "name": "Check Success?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [660, 0]
+      "position": [
+        660,
+        0
+      ]
     },
     {
       "parameters": {
@@ -93,7 +111,10 @@
       "name": "Send Summary",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [880, -100]
+      "position": [
+        880,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -117,7 +138,10 @@
       "name": "Create Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1100, -100]
+      "position": [
+        1100,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -127,7 +151,10 @@
       "name": "Prepare Embed Batches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1320, -100]
+      "position": [
+        1320,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -158,7 +185,10 @@
       "name": "Post Embeds to Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1540, -100]
+      "position": [
+        1540,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -170,7 +200,10 @@
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1760, -100]
+      "position": [
+        1760,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -182,7 +215,10 @@
       "name": "Respond Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [880, 100]
+      "position": [
+        880,
+        100
+      ]
     }
   ],
   "connections": {
@@ -284,6 +320,466 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "callerPolicy": "workflowsFromSameOwner"
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "activeVersionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+  "versionCounter": 36,
+  "shared": [
+    {
+      "updatedAt": "2025-12-31T20:06:03.669Z",
+      "createdAt": "2025-12-31T20:06:03.669Z",
+      "role": "workflow:owner",
+      "workflowId": "9jvzB315rIB28iGk",
+      "projectId": "9PluwpnSgpfsJVgg",
+      "project": {
+        "updatedAt": "2025-12-28T01:37:43.910Z",
+        "createdAt": "2025-12-28T01:35:40.066Z",
+        "id": "9PluwpnSgpfsJVgg",
+        "name": "Lee Truong <lee.t.truong@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-28T01:35:40.067Z",
+            "createdAt": "2025-12-28T01:35:40.067Z",
+            "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+            "projectId": "9PluwpnSgpfsJVgg",
+            "user": {
+              "updatedAt": "2026-01-28T07:20:46.000Z",
+              "createdAt": "2025-12-28T01:35:38.819Z",
+              "id": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+              "email": "lee.t.truong@gmail.com",
+              "firstName": "Lee",
+              "lastName": "Truong",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-28T01:37:56.518Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "companyType": "personal",
+                "reportedSource": "other",
+                "reportedSourceOther": "Reddit"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "HjMS6wKFEuMHakM7",
+                "userActivatedAt": 1767045606046,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1769392857656
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-01-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-01-01T21:55:13.798Z",
+    "createdAt": "2026-01-01T21:55:13.798Z",
+    "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+    "workflowId": "9jvzB315rIB28iGk",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "vettix-scraper",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook-trigger",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "vettix-scraper"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://vettix-scraper.vettix-scraper.svc.cluster.local:8000/scrape",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ state: $json.body.state, status: $json.body.status || 'open' }) }}",
+          "options": {
+            "timeout": 120000
+          }
+        },
+        "id": "http-scrape",
+        "name": "Scrape VetTix",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          220,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json;\nconst webhookData = $('Webhook').first().json.body;\n\nif (!input.success) {\n  return [{\n    json: {\n      success: false,\n      error: true,\n      message: `Failed to scrape VetTix: ${input.message || 'Unknown error'}`\n    }\n  }];\n}\n\nconst events = input.events || [];\nconst state = input.state || webhookData.state?.toUpperCase() || 'Unknown';\nconst status = input.status || webhookData.status || 'open';\nconst channelId = webhookData.channel_id;\n\n// State name mapping\nconst stateNames = {\n  'TX': 'Texas', 'TN': 'Tennessee', 'CA': 'California', 'NV': 'Nevada',\n  'FL': 'Florida', 'NY': 'New York', 'AZ': 'Arizona', 'CO': 'Colorado',\n  'GA': 'Georgia', 'NC': 'North Carolina'\n};\nconst stateName = stateNames[state] || state;\n\n// Badge emoji mapping\nconst badgeDisplayEmojis = {\n  'BASKETBALL': '\\uD83C\\uDFC0', 'FOOTBALL': '\\uD83C\\uDFC8', 'CONCERTS': '\\uD83C\\uDFB5', 'COMEDY': '\\uD83D\\uDE02',\n  'HOCKEY': '\\uD83C\\uDFD2', 'BASEBALL': '\\u26BE', 'SOCCER': '\\u26BD', 'WRESTLING': '\\uD83E\\uDD3C',\n  'THEATER': '\\uD83C\\uDFAD', 'MUSICALS': '\\uD83C\\uDFAD', 'FAMILY': '\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66',\n  'FESTIVALS/FAIRS': '\\uD83C\\uDFA1', 'MONSTER TRUCK': '\\uD83D\\uDE9A', 'ADULT': '\\uD83D\\uDD1E',\n  'EDUCATIONAL': '\\uD83D\\uDCDA', 'MAGICIAN/ILLUSIONIST': '\\uD83C\\uDFA9', 'MIXED MARTIAL ARTS': '\\uD83E\\uDD4A', 'SPORTS': '\\uD83C\\uDFC5'\n};\n\n// Count events by category\nconst categoryCounts = {};\nfor (const event of events) {\n  const badge = event.badge || 'OTHER';\n  categoryCounts[badge] = (categoryCounts[badge] || 0) + 1;\n}\n\n// Sort categories by count\nconst sortedCategories = Object.entries(categoryCounts)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 6);\n\n// Build category summary\nlet categoryText = '';\nfor (const [badge, count] of sortedCategories) {\n  const emoji = badgeDisplayEmojis[badge] || '\\uD83D\\uDCE6';\n  categoryText += `${emoji} ${badge}: ${count}\\n`;\n}\n\n// Build summary message\nconst summary = `\\uD83D\\uDCCA **VetTix Events - ${stateName} (${state})**\\nFound **${events.length}** events with ${status} tickets\\n\\n**Categories:**\\n${categoryText}`;\n\n// Build embeds for events (batched, max 10 per message)\nconst embedBatches = [];\nconst batchSize = 10;\n\nfor (let i = 0; i < events.length; i += batchSize) {\n  const batch = events.slice(i, i + batchSize);\n  const embeds = batch.map(event => {\n    const emoji = badgeDisplayEmojis[event.badge] || '\\uD83D\\uDCE6';\n    return {\n      title: event.title,\n      description: `${emoji} **${event.badge}**\\n\\uD83D\\uDCC5 ${event.date} at ${event.time}\\n\\uD83D\\uDCCD ${event.location}`,\n      url: event.link,\n      color: 43520\n    };\n  });\n  embedBatches.push(embeds);\n}\n\nreturn [{\n  json: {\n    success: true,\n    state: state,\n    stateName: stateName,\n    count: events.length,\n    summary: summary,\n    embedBatches: embedBatches,\n    channelId: channelId,\n    events: events\n  }\n}];"
+        },
+        "id": "code-format",
+        "name": "Format Results",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          440,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "success-check",
+                "leftValue": "={{ $json.success }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if-success",
+        "name": "Check Success?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          660,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://discord.com/api/v10/channels/{{ $json.channelId }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ content: $json.summary }) }}",
+          "options": {}
+        },
+        "id": "discord-summary",
+        "name": "Send Summary",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          880,
+          -100
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://discord.com/api/v10/channels/{{ $('Format Results').item.json.channelId }}/messages/{{ $json.id }}/threads",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ name: $('Format Results').item.json.stateName + ' Events - ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), auto_archive_duration: 1440 }) }}",
+          "options": {}
+        },
+        "id": "discord-create-thread",
+        "name": "Create Thread",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1100,
+          -100
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const threadId = $input.first().json.id;\nconst embedBatches = $('Format Results').item.json.embedBatches;\n\n// Return each batch as a separate item to post to thread\nreturn embedBatches.map(embeds => ({\n  json: {\n    threadId: threadId,\n    embeds: embeds\n  }\n}));"
+        },
+        "id": "code-prepare-batches",
+        "name": "Prepare Embed Batches",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1320,
+          -100
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://discord.com/api/v10/channels/{{ $json.threadId }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "=Bot {{ $env.DISCORD_BOT_TOKEN }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ embeds: $json.embeds }) }}",
+          "options": {
+            "batching": {
+              "batch": {
+                "batchSize": 1,
+                "batchInterval": 2000
+              }
+            }
+          }
+        },
+        "id": "discord-post-embeds",
+        "name": "Post Embeds to Thread",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1540,
+          -100
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, state: $('Format Results').item.json.state, count: $('Format Results').item.json.count, message: 'Posted ' + $('Format Results').item.json.count + ' events to thread' }) }}",
+          "options": {}
+        },
+        "id": "respond-success",
+        "name": "Respond Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1760,
+          -100
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": false,\n  \"error\": true,\n  \"message\": \"{{ $json.message || 'Failed to scrape VetTix events' }}\"\n}",
+          "options": {}
+        },
+        "id": "respond-error",
+        "name": "Respond Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          880,
+          100
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Scrape VetTix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Scrape VetTix": {
+        "main": [
+          [
+            {
+              "node": "Format Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Results": {
+        "main": [
+          [
+            {
+              "node": "Check Success?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Success?": {
+        "main": [
+          [
+            {
+              "node": "Send Summary",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Summary": {
+        "main": [
+          [
+            {
+              "node": "Create Thread",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Thread": {
+        "main": [
+          [
+            {
+              "node": "Prepare Embed Batches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Embed Batches": {
+        "main": [
+          [
+            {
+              "node": "Post Embeds to Thread",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Post Embeds to Thread": {
+        "main": [
+          [
+            {
+              "node": "Respond Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Lee Truong",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-01T21:55:14.003Z",
+        "id": 24,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-01T21:55:21.978Z",
+        "id": 25,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-04T18:39:09.676Z",
+        "id": 28,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-04T19:53:41.802Z",
+        "id": 31,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-04T20:03:20.386Z",
+        "id": 34,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-04T20:53:09.993Z",
+        "id": 40,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-04T21:02:44.457Z",
+        "id": 48,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-26T03:52:53.083Z",
+        "id": 55,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-27T02:08:42.717Z",
+        "id": 63,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      }
+    ]
   }
 }

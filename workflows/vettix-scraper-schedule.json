@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-01-27T02:08:39.556Z",
+  "createdAt": "2025-12-31T20:06:02.321Z",
+  "id": "qAEDnq7pJY2bdL66",
   "name": "VetTix Scraper Schedule",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -16,7 +22,10 @@
       "name": "Daily 8am",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
@@ -26,7 +35,10 @@
       "name": "Get States",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [220, 0]
+      "position": [
+        220,
+        0
+      ]
     },
     {
       "parameters": {
@@ -43,7 +55,10 @@
       "name": "Scrape VetTix",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [440, 0]
+      "position": [
+        440,
+        0
+      ]
     },
     {
       "parameters": {
@@ -53,7 +68,10 @@
       "name": "Format Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 0]
+      "position": [
+        660,
+        0
+      ]
     },
     {
       "parameters": {
@@ -82,7 +100,10 @@
       "name": "Check Success?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [880, 0]
+      "position": [
+        880,
+        0
+      ]
     },
     {
       "parameters": {
@@ -106,7 +127,10 @@
       "name": "Send Summary",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1100, -100]
+      "position": [
+        1100,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -130,7 +154,10 @@
       "name": "Create Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1320, -100]
+      "position": [
+        1320,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -140,7 +167,10 @@
       "name": "Prepare Embed Batches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1540, -100]
+      "position": [
+        1540,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -171,7 +201,10 @@
       "name": "Post Embeds to Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1760, -100]
+      "position": [
+        1760,
+        -100
+      ]
     },
     {
       "parameters": {
@@ -195,7 +228,10 @@
       "name": "Log Error",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1100, 100]
+      "position": [
+        1100,
+        100
+      ]
     }
   ],
   "connections": {
@@ -297,6 +333,71 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "callerPolicy": "workflowsFromSameOwner"
-  }
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "activeVersionId": null,
+  "versionCounter": 8,
+  "shared": [
+    {
+      "updatedAt": "2025-12-31T20:06:02.323Z",
+      "createdAt": "2025-12-31T20:06:02.323Z",
+      "role": "workflow:owner",
+      "workflowId": "qAEDnq7pJY2bdL66",
+      "projectId": "9PluwpnSgpfsJVgg",
+      "project": {
+        "updatedAt": "2025-12-28T01:37:43.910Z",
+        "createdAt": "2025-12-28T01:35:40.066Z",
+        "id": "9PluwpnSgpfsJVgg",
+        "name": "Lee Truong <lee.t.truong@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-28T01:35:40.067Z",
+            "createdAt": "2025-12-28T01:35:40.067Z",
+            "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+            "projectId": "9PluwpnSgpfsJVgg",
+            "user": {
+              "updatedAt": "2026-01-28T07:20:46.000Z",
+              "createdAt": "2025-12-28T01:35:38.819Z",
+              "id": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+              "email": "lee.t.truong@gmail.com",
+              "firstName": "Lee",
+              "lastName": "Truong",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-28T01:37:56.518Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "companyType": "personal",
+                "reportedSource": "other",
+                "reportedSourceOther": "Reddit"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "HjMS6wKFEuMHakM7",
+                "userActivatedAt": 1767045606046,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1769392857656
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-01-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
 }

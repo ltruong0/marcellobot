@@ -50,7 +50,10 @@ class HelpCommands(commands.Cog):
             name="Universal Stock Checker (AI-Powered)",
             value=(
                 "`/stock-check <url>` - Check ANY product stock using AI analysis\n"
-                "  Works with any website - analyzes page with Ollama LLM"
+                "`/stock-watch <url> [interval]` - Add ANY product to AI watch list (default: 5 min)\n"
+                "`/stock-unwatch <url>` - Remove product from AI watch list\n"
+                "`/stock-watchlist` - List all AI-monitored products\n"
+                "  Works with any website - analyzes pages with Ollama LLM"
             ),
             inline=False,
         )
