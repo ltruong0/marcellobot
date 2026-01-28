@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-27T02:08:38.822Z",
+  "updatedAt": "2026-01-28T22:00:48.093Z",
   "createdAt": "2026-01-26T03:52:49.560Z",
   "id": "bNkrcNUHQfESa8ek",
   "name": "Best Buy Stock Check",
@@ -276,7 +276,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
-  "versionCounter": 7,
+  "versionCounter": 37,
   "shared": [
     {
       "updatedAt": "2026-01-26T03:52:49.623Z",
@@ -617,6 +617,86 @@
       {
         "createdAt": "2026-01-27T02:08:38.992Z",
         "id": 60,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:33:25.508Z",
+        "id": 71,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:33:29.997Z",
+        "id": 75,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:36:23.102Z",
+        "id": 79,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:36:25.639Z",
+        "id": 83,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:41:02.447Z",
+        "id": 87,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:41:09.790Z",
+        "id": 91,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T15:53:40.831Z",
+        "id": 108,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T15:53:42.482Z",
+        "id": 112,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T22:00:46.452Z",
+        "id": 116,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T22:00:48.124Z",
+        "id": 120,
         "workflowId": "bNkrcNUHQfESa8ek",
         "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
         "event": "activated",

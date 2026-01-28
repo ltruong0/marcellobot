@@ -468,6 +468,8 @@ class StockCommands(commands.Cog):
                 "logs_channel_id": logs_channel_id,
             }
 
+            # Note: logs_channel_id is provided so Discord logging will work
+
             result = await self.n8n.trigger_webhook("universal-stock-check", payload)
 
             if result.get("error"):

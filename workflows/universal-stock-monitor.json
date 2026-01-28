@@ -1,6 +1,11 @@
 {
+  "updatedAt": "2026-01-28T22:00:48.788Z",
+  "createdAt": "2026-01-28T22:00:48.788Z",
+  "id": "gQd3GuNHtZ3XVUJP",
   "name": "Universal Stock Monitor",
+  "description": null,
   "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -17,7 +22,10 @@
       "name": "Every Minute",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [0, 300]
+      "position": [
+        0,
+        300
+      ]
     },
     {
       "parameters": {
@@ -30,7 +38,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "webhookId": "universal-stock-watch"
     },
     {
@@ -41,7 +52,10 @@
       "name": "Manage Watch List",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [220, 0]
+      "position": [
+        220,
+        0
+      ]
     },
     {
       "parameters": {
@@ -53,7 +67,10 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [440, 0]
+      "position": [
+        440,
+        0
+      ]
     },
     {
       "parameters": {
@@ -63,7 +80,10 @@
       "name": "Get Products to Check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [220, 300]
+      "position": [
+        220,
+        300
+      ]
     },
     {
       "parameters": {
@@ -92,7 +112,10 @@
       "name": "Has Products?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [440, 300]
+      "position": [
+        440,
+        300
+      ]
     },
     {
       "parameters": {
@@ -123,7 +146,10 @@
       "name": "Call Universal Stock Check",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [660, 200]
+      "position": [
+        660,
+        200
+      ]
     },
     {
       "parameters": {
@@ -133,7 +159,10 @@
       "name": "Process Stock Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [880, 200]
+      "position": [
+        880,
+        200
+      ]
     },
     {
       "parameters": {
@@ -143,7 +172,10 @@
       "name": "Update Last Checked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1100, 200]
+      "position": [
+        1100,
+        200
+      ]
     },
     {
       "parameters": {
@@ -172,7 +204,10 @@
       "name": "Send Alert?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1320, 200]
+      "position": [
+        1320,
+        200
+      ]
     },
     {
       "parameters": {
@@ -195,10 +230,13 @@
       "name": "Discord Stock Alert",
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
-      "position": [1540, 100],
+      "position": [
+        1540,
+        100
+      ],
       "credentials": {
         "discordBotApi": {
-          "id": "discord-bot",
+          "id": "V3BxUuJIGjCULqBN",
           "name": "MarcelloBot"
         }
       }
@@ -224,10 +262,13 @@
       "name": "Discord Log",
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
-      "position": [1540, 300],
+      "position": [
+        1540,
+        300
+      ],
       "credentials": {
         "discordBotApi": {
-          "id": "discord-bot",
+          "id": "V3BxUuJIGjCULqBN",
           "name": "MarcelloBot"
         }
       }
@@ -354,6 +395,479 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "activeVersionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+  "versionCounter": 5,
+  "shared": [
+    {
+      "updatedAt": "2026-01-28T22:00:48.790Z",
+      "createdAt": "2026-01-28T22:00:48.790Z",
+      "role": "workflow:owner",
+      "workflowId": "gQd3GuNHtZ3XVUJP",
+      "projectId": "9PluwpnSgpfsJVgg",
+      "project": {
+        "updatedAt": "2025-12-28T01:37:43.910Z",
+        "createdAt": "2025-12-28T01:35:40.066Z",
+        "id": "9PluwpnSgpfsJVgg",
+        "name": "Lee Truong <lee.t.truong@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-28T01:35:40.067Z",
+            "createdAt": "2025-12-28T01:35:40.067Z",
+            "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+            "projectId": "9PluwpnSgpfsJVgg",
+            "user": {
+              "updatedAt": "2026-01-28T07:20:46.000Z",
+              "createdAt": "2025-12-28T01:35:38.819Z",
+              "id": "7beaf598-6999-4d3c-9d00-baa047dc31a6",
+              "email": "lee.t.truong@gmail.com",
+              "firstName": "Lee",
+              "lastName": "Truong",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-28T01:37:56.518Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "companyType": "personal",
+                "reportedSource": "other",
+                "reportedSourceOther": "Reddit"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "HjMS6wKFEuMHakM7",
+                "userActivatedAt": 1767045606046,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1769392857656
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-01-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-01-28T23:09:52.000Z",
+    "createdAt": "2026-01-28T22:00:48.796Z",
+    "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+    "workflowId": "gQd3GuNHtZ3XVUJP",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 1
+              }
+            ]
+          }
+        },
+        "id": "schedule-trigger",
+        "name": "Every Minute",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "universal-stock-watch",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook-trigger",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "universal-stock-watch"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst action = body.action;\n\n// Get existing watch list from static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nif (action === 'add') {\n  // Check if URL already exists for this guild\n  const exists = watchList.some(p => p.url === body.url && p.guild_id === body.guild_id);\n  \n  if (exists) {\n    return [{\n      json: {\n        success: false,\n        action: 'add',\n        message: 'Product already in watch list: ' + body.url\n      }\n    }];\n  }\n  \n  // Add new product\n  const newProduct = {\n    url: body.url,\n    product_name: body.product_name || 'Unknown Product',\n    guild_id: body.guild_id,\n    added_by: body.added_by,\n    interval_minutes: body.interval_minutes || 5,\n    logs_channel_id: body.logs_channel_id,\n    alerts_channel_id: body.alerts_channel_id,\n    added_at: new Date().toISOString(),\n    last_checked: null,\n    last_in_stock: false\n  };\n  \n  watchList.push(newProduct);\n  staticData.watchList = watchList;\n  \n  return [{\n    json: {\n      success: true,\n      action: 'added',\n      message: 'Added to watch list: ' + body.url\n    }\n  }];\n  \n} else if (action === 'remove') {\n  const initialLength = watchList.length;\n  watchList = watchList.filter(p => !(p.url === body.url && p.guild_id === body.guild_id));\n  staticData.watchList = watchList;\n  \n  if (watchList.length < initialLength) {\n    return [{\n      json: {\n        success: true,\n        action: 'removed',\n        message: 'Removed from watch list: ' + body.url\n      }\n    }];\n  } else {\n    return [{\n      json: {\n        success: false,\n        action: 'remove',\n        message: 'Product not found in watch list: ' + body.url\n      }\n    }];\n  }\n  \n} else if (action === 'list') {\n  const guildProducts = watchList.filter(p => p.guild_id === body.guild_id);\n  \n  if (guildProducts.length === 0) {\n    return [{\n      json: {\n        success: true,\n        action: 'list',\n        products: [],\n        message: 'No products in watch list'\n      }\n    }];\n  }\n  \n  const productList = guildProducts.map((p, i) => \n    `${i + 1}. **${p.product_name}** (every ${p.interval_minutes}m)\\n   ${p.url}`\n  ).join('\\n');\n  \n  return [{\n    json: {\n      success: true,\n      action: 'list',\n      products: guildProducts,\n      count: guildProducts.length,\n      message: `**Watch List (${guildProducts.length} products):**\\n${productList}`\n    }\n  }];\n}\n\nreturn [{ json: { success: false, message: 'Unknown action: ' + action } }];"
+        },
+        "id": "manage-watch-list",
+        "name": "Manage Watch List",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          220,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "id": "respond",
+        "name": "Respond",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          440,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get watch list from static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nconst now = new Date();\nconst productsToCheck = [];\n\nfor (let i = 0; i < watchList.length; i++) {\n  const product = watchList[i];\n  if (!product.url) continue;\n  \n  const intervalMinutes = parseInt(product.interval_minutes) || 5;\n  const lastChecked = product.last_checked ? new Date(product.last_checked) : null;\n  \n  let shouldCheck = false;\n  if (!lastChecked) {\n    shouldCheck = true;\n  } else {\n    const minutesSinceLastCheck = (now - lastChecked) / (1000 * 60);\n    shouldCheck = minutesSinceLastCheck >= intervalMinutes;\n  }\n  \n  if (shouldCheck) {\n    productsToCheck.push({\n      json: {\n        ...product,\n        index: i\n      }\n    });\n  }\n}\n\nif (productsToCheck.length === 0) {\n  return [{ json: { skip: true, message: 'No products due for checking' } }];\n}\n\nreturn productsToCheck;"
+        },
+        "id": "get-products",
+        "name": "Get Products to Check",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          220,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "skip-check",
+                "leftValue": "={{ $json.skip }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if-has-products",
+        "name": "Has Products?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          440,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://workflows.marcellolab.com/webhook/universal-stock-check",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "url",
+                "value": "={{ $json.url }}"
+              },
+              {
+                "name": "logs_channel_id",
+                "value": "={{ $json.logs_channel_id }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "call-stock-check",
+        "name": "Call Universal Stock Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          660,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const stockResult = $input.first().json;\nconst productData = $('Get Products to Check').first().json;\n\nif (!stockResult.success) {\n  return [{\n    json: {\n      ...productData,\n      success: false,\n      error: stockResult.message || 'Stock check failed'\n    }\n  }];\n}\n\nconst inStock = stockResult.inStock === true;\nconst wasInStock = productData.last_in_stock === true || productData.last_in_stock === 'true';\nconst sendAlert = inStock && !wasInStock;\n\nreturn [{\n  json: {\n    ...productData,\n    success: true,\n    product_name: stockResult.productName || productData.product_name,\n    inStock: inStock,\n    wasInStock: wasInStock,\n    sendAlert: sendAlert,\n    price: stockResult.price || 'Unknown',\n    confidence: stockResult.confidence || 'unknown',\n    reasoning: stockResult.reasoning || '',\n    checkedAt: new Date().toISOString()\n  }\n}];"
+        },
+        "id": "process-result",
+        "name": "Process Stock Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const result = $input.first().json;\n\n// Update the watch list in static data\nconst staticData = $getWorkflowStaticData('global');\nlet watchList = staticData.watchList || [];\n\nif (result.index !== undefined && watchList[result.index]) {\n  watchList[result.index].last_checked = result.checkedAt;\n  watchList[result.index].last_in_stock = result.inStock;\n  watchList[result.index].product_name = result.product_name;\n  staticData.watchList = watchList;\n}\n\nreturn [$input.first()];"
+        },
+        "id": "update-product",
+        "name": "Update Last Checked",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1100,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "send-alert-check",
+                "leftValue": "={{ $json.sendAlert }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if-send-alert",
+        "name": "Send Alert?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1320,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "botToken",
+          "resource": "message",
+          "operation": "send",
+          "guildId": {
+            "__rl": true,
+            "value": "1455288023871656132",
+            "mode": "id"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1465975393830834196",
+            "mode": "id"
+          },
+          "content": "=🟢 **{{ $json.product_name }}** is back in stock!\n\n**Price:** {{ $json.price }}\n**Confidence:** {{ $json.confidence }}\n**Link:** {{ $json.url }}\n\n_AI Analysis: {{ $json.reasoning }}_"
+        },
+        "id": "discord-alert",
+        "name": "Discord Stock Alert",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1540,
+          100
+        ],
+        "credentials": {
+          "discordBotApi": {
+            "id": "V3BxUuJIGjCULqBN",
+            "name": "MarcelloBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "botToken",
+          "resource": "message",
+          "operation": "send",
+          "guildId": {
+            "__rl": true,
+            "value": "1455288023871656132",
+            "mode": "id"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "={{ $json.logs_channel_id }}",
+            "mode": "id"
+          },
+          "content": "=`[Universal Stock Monitor]` Checked **{{ $json.product_name }}**: {{ $json.inStock ? 'In Stock ✓' : 'Out of Stock' }} ({{ $json.confidence }} confidence)"
+        },
+        "id": "discord-log",
+        "name": "Discord Log",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1540,
+          300
+        ],
+        "credentials": {
+          "discordBotApi": {
+            "id": "V3BxUuJIGjCULqBN",
+            "name": "MarcelloBot"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Manage Watch List",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manage Watch List": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Every Minute": {
+        "main": [
+          [
+            {
+              "node": "Get Products to Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Products to Check": {
+        "main": [
+          [
+            {
+              "node": "Has Products?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Products?": {
+        "main": [
+          [
+            {
+              "node": "Call Universal Stock Check",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Call Universal Stock Check": {
+        "main": [
+          [
+            {
+              "node": "Process Stock Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Stock Result": {
+        "main": [
+          [
+            {
+              "node": "Update Last Checked",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Last Checked": {
+        "main": [
+          [
+            {
+              "node": "Send Alert?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Alert?": {
+        "main": [
+          [
+            {
+              "node": "Discord Stock Alert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Discord Log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord Stock Alert": {
+        "main": [
+          [
+            {
+              "node": "Discord Log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Lee Truong",
+    "name": "Version 0357e043",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-28T23:09:52.410Z",
+        "id": 124,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      }
+    ]
   }
 }

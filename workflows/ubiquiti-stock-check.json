@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-27T02:08:40.173Z",
+  "updatedAt": "2026-01-28T22:00:46.934Z",
   "createdAt": "2025-12-31T16:03:06.302Z",
   "id": "l3ODSj6xssx0rGMS",
   "name": "Ubiquiti Stock Check",
@@ -247,7 +247,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-  "versionCounter": 46,
+  "versionCounter": 61,
   "shared": [
     {
       "updatedAt": "2025-12-31T16:03:06.310Z",
@@ -623,6 +623,46 @@
       {
         "createdAt": "2026-01-27T02:08:40.290Z",
         "id": 61,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:33:26.210Z",
+        "id": 72,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:36:24.035Z",
+        "id": 80,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T07:41:03.773Z",
+        "id": 88,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T15:53:41.318Z",
+        "id": 109,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T22:00:47.005Z",
+        "id": 117,
         "workflowId": "l3ODSj6xssx0rGMS",
         "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
         "event": "activated",
