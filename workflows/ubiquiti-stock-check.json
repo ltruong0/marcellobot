@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T23:16:56.111Z",
+  "updatedAt": "2026-01-28T23:39:31.603Z",
   "createdAt": "2025-12-31T16:03:06.302Z",
   "id": "l3ODSj6xssx0rGMS",
   "name": "Ubiquiti Stock Check",
@@ -247,7 +247,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
-  "versionCounter": 67,
+  "versionCounter": 85,
   "shared": [
     {
       "updatedAt": "2025-12-31T16:03:06.310Z",
@@ -679,6 +679,54 @@
       {
         "createdAt": "2026-01-28T23:16:56.161Z",
         "id": 135,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:26:50.883Z",
+        "id": 147,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:34:46.651Z",
+        "id": 156,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:35:54.054Z",
+        "id": 165,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:11.906Z",
+        "id": 174,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:40.792Z",
+        "id": 183,
+        "workflowId": "l3ODSj6xssx0rGMS",
+        "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:39:31.709Z",
+        "id": 192,
         "workflowId": "l3ODSj6xssx0rGMS",
         "versionId": "a10a1478-da3d-4986-801a-abff27cd3aa1",
         "event": "activated",

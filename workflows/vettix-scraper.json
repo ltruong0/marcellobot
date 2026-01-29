@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T23:16:58.140Z",
+  "updatedAt": "2026-01-28T23:39:33.626Z",
   "createdAt": "2025-12-31T20:06:03.663Z",
   "id": "9jvzB315rIB28iGk",
   "name": "VetTix Scraper",
@@ -327,7 +327,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
-  "versionCounter": 57,
+  "versionCounter": 75,
   "shared": [
     {
       "updatedAt": "2025-12-31T20:06:03.669Z",
@@ -831,6 +831,54 @@
       {
         "createdAt": "2026-01-28T23:16:58.187Z",
         "id": 141,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:26:52.923Z",
+        "id": 153,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:34:48.694Z",
+        "id": 162,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:35:56.200Z",
+        "id": 171,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:13.907Z",
+        "id": 180,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:43.006Z",
+        "id": 189,
+        "workflowId": "9jvzB315rIB28iGk",
+        "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:39:33.672Z",
+        "id": 198,
         "workflowId": "9jvzB315rIB28iGk",
         "versionId": "7ad968d1-7100-4531-9c0d-d34a9963945c",
         "event": "activated",

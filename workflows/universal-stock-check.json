@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T23:23:32.496Z",
+  "updatedAt": "2026-01-28T23:51:34.259Z",
   "createdAt": "2026-01-27T02:08:40.849Z",
   "id": "iDxSbZMiCZrFd7sn",
   "name": "Universal Stock Check",
@@ -123,11 +123,8 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
-        "hasOutputParser": true,
-        "options": {
-          "systemMessage": "You are a precise stock availability analyzer. Always respond with valid JSON only, no additional text."
-        }
+        "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nCRITICAL RULES FOR STOCK DETECTION:\n1. FIRST check for OUT OF STOCK indicators - if ANY of these exist, set inStock=false:\n   - Text containing: \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\"\n   - Disabled buttons with text like \"Out of Stock\"\n   - \"Notify Me\" or \"Back in Stock Alert\" buttons\n   - availability: \"OutOfStock\" in schema\n\n2. ONLY set inStock=true if you find ACTIVE \"Add to Cart\" or \"Buy Now\" buttons\n   - Button must NOT be disabled\n   - Button must be clickable/actionable\n   - availability: \"InStock\" in schema\n\n3. When uncertain or conflicting signals, ALWAYS default to inStock=false with low confidence\n\n4. Be EXTREMELY strict - false positives (saying in-stock when out) are worse than false negatives",
+        "hasOutputParser": true
       },
       "id": "ai-chain",
       "name": "AI Stock Analyzer",
@@ -160,7 +157,7 @@
     },
     {
       "parameters": {
-        "jsonSchema": "{\"type\":\"object\",\"properties\":{\"inStock\":{\"type\":\"boolean\"},\"productName\":{\"type\":\"string\"},\"price\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\",\"enum\":[\"high\",\"medium\",\"low\"]},\"reasoning\":{\"type\":\"string\"}},\"required\":[\"inStock\",\"productName\",\"price\",\"confidence\"]}"
+        "jsonSchemaExample": "  {                                                           \n    \"inStock\": false,                                         \n    \"productName\": \"NVIDIA GeForce RTX 5090\",                 \n    \"price\": \"$1999.99\",                                      \n    \"confidence\": \"high\",                                     \n    \"reasoning\": \"Product page shows out of stock message\"    \n  }    "
       },
       "id": "output-parser",
       "name": "JSON Output Parser",
@@ -323,7 +320,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $json.inStock }},\n  \"productName\": \"{{ $json.productName }}\",\n  \"price\": \"{{ $json.price }}\",\n  \"confidence\": \"{{ $json.confidence }}\",\n  \"message\": \"{{ $json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $json.productName }} ({{ $json.price }})\"\n}",
+        "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $('Is In Stock?').item.json.inStock }},\n  \"productName\": \"{{ $('Is In Stock?').item.json.productName }}\",\n  \"price\": \"{{ $('Is In Stock?').item.json.price }}\",\n  \"confidence\": \"{{ $('Is In Stock?').item.json.confidence }}\",\n  \"message\": \"{{ $('Is In Stock?').item.json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $('Is In Stock?').item.json.productName }} ({{ $('Is In Stock?').item.json.price }})\"\n}",
         "options": {}
       },
       "id": "respond-success",
@@ -496,8 +493,8 @@
   "meta": {
     "templateCredsSetupCompleted": false
   },
-  "activeVersionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
-  "versionCounter": 161,
+  "activeVersionId": "4610c97b-cdf3-42ca-be12-12690e01d7ee",
+  "versionCounter": 203,
   "shared": [
     {
       "updatedAt": "2026-01-27T02:08:40.851Z",
@@ -557,9 +554,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-01-28T23:23:34.000Z",
-    "createdAt": "2026-01-28T23:23:32.497Z",
-    "versionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
+    "updatedAt": "2026-01-28T23:51:46.000Z",
+    "createdAt": "2026-01-28T23:51:02.149Z",
+    "versionId": "4610c97b-cdf3-42ca-be12-12690e01d7ee",
     "workflowId": "iDxSbZMiCZrFd7sn",
     "nodes": [
       {
@@ -678,7 +675,7 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nLook for indicators like:\n- \"Add to Cart\", \"Buy Now\" buttons = IN STOCK\n- \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\" = OUT OF STOCK\n- \"Notify Me\", \"Back in Stock Alert\" = OUT OF STOCK\n- Check meta tags, JSON-LD schema, button states\n- If uncertain, default to out of stock with low confidence",
+          "text": "=You are a product stock availability analyzer. Analyze the following HTML and determine:\n1. If the product is currently in stock\n2. The product name\n3. The product price\n\nHTML to analyze:\n{{ $json.html }}\n\nRespond in JSON format only:\n{\n  \"inStock\": true/false,\n  \"productName\": \"product name\",\n  \"price\": \"$XX.XX or price string\",\n  \"confidence\": \"high/medium/low\",\n  \"reasoning\": \"brief explanation of how you determined stock status\"\n}\n\nCRITICAL RULES FOR STOCK DETECTION:\n1. FIRST check for OUT OF STOCK indicators - if ANY of these exist, set inStock=false:\n   - Text containing: \"Out of Stock\", \"Sold Out\", \"Unavailable\", \"Coming Soon\"\n   - Disabled buttons with text like \"Out of Stock\"\n   - \"Notify Me\" or \"Back in Stock Alert\" buttons\n   - availability: \"OutOfStock\" in schema\n\n2. ONLY set inStock=true if you find ACTIVE \"Add to Cart\" or \"Buy Now\" buttons\n   - Button must NOT be disabled\n   - Button must be clickable/actionable\n   - availability: \"InStock\" in schema\n\n3. When uncertain or conflicting signals, ALWAYS default to inStock=false with low confidence\n\n4. Be EXTREMELY strict - false positives (saying in-stock when out) are worse than false negatives",
           "hasOutputParser": true
         },
         "id": "ai-chain",
@@ -692,7 +689,7 @@
       },
       {
         "parameters": {
-          "model": "llama3.2:latest",
+          "model": "qwen2.5-coder:7b-instruct-q6_K",
           "options": {}
         },
         "id": "ollama-model",
@@ -711,7 +708,9 @@
         }
       },
       {
-        "parameters": {},
+        "parameters": {
+          "jsonSchemaExample": "  {                                                           \n    \"inStock\": false,                                         \n    \"productName\": \"NVIDIA GeForce RTX 5090\",                 \n    \"price\": \"$1999.99\",                                      \n    \"confidence\": \"high\",                                     \n    \"reasoning\": \"Product page shows out of stock message\"    \n  }    "
+        },
         "id": "output-parser",
         "name": "JSON Output Parser",
         "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
@@ -873,7 +872,7 @@
       {
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $json.inStock }},\n  \"productName\": \"{{ $json.productName }}\",\n  \"price\": \"{{ $json.price }}\",\n  \"confidence\": \"{{ $json.confidence }}\",\n  \"message\": \"{{ $json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $json.productName }} ({{ $json.price }})\"\n}",
+          "responseBody": "={\n  \"success\": true,\n  \"inStock\": {{ $('Is In Stock?').item.json.inStock }},\n  \"productName\": \"{{ $('Is In Stock?').item.json.productName }}\",\n  \"price\": \"{{ $('Is In Stock?').item.json.price }}\",\n  \"confidence\": \"{{ $('Is In Stock?').item.json.confidence }}\",\n  \"message\": \"{{ $('Is In Stock?').item.json.inStock ? '🟢 **IN STOCK!** ' : '🔴 **Out of Stock** - ' }}{{ $('Is In Stock?').item.json.productName }} ({{ $('Is In Stock?').item.json.price }})\"\n}",
           "options": {}
         },
         "id": "respond-success",
@@ -1039,15 +1038,15 @@
       }
     },
     "authors": "Lee Truong",
-    "name": "Version 5338c6c5",
+    "name": "Version 4610c97b",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-01-28T23:23:34.537Z",
-        "id": 145,
+        "createdAt": "2026-01-28T23:51:46.892Z",
+        "id": 202,
         "workflowId": "iDxSbZMiCZrFd7sn",
-        "versionId": "5338c6c5-1688-43c9-943f-aab30fa4d8f0",
+        "versionId": "4610c97b-cdf3-42ca-be12-12690e01d7ee",
         "event": "activated",
         "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
       }

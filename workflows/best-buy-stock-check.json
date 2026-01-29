@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T23:16:57.245Z",
+  "updatedAt": "2026-01-28T23:39:32.800Z",
   "createdAt": "2026-01-26T03:52:49.560Z",
   "id": "bNkrcNUHQfESa8ek",
   "name": "Best Buy Stock Check",
@@ -276,7 +276,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
-  "versionCounter": 49,
+  "versionCounter": 85,
   "shared": [
     {
       "updatedAt": "2026-01-26T03:52:49.623Z",
@@ -729,6 +729,102 @@
       {
         "createdAt": "2026-01-28T23:16:57.281Z",
         "id": 138,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:26:50.429Z",
+        "id": 146,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:26:51.979Z",
+        "id": 150,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:34:46.171Z",
+        "id": 155,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:34:47.814Z",
+        "id": 159,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:35:53.456Z",
+        "id": 164,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:35:55.127Z",
+        "id": 168,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:11.448Z",
+        "id": 173,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:12.996Z",
+        "id": 177,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:40.337Z",
+        "id": 182,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:42.129Z",
+        "id": 186,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:39:31.071Z",
+        "id": 191,
+        "workflowId": "bNkrcNUHQfESa8ek",
+        "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:39:32.844Z",
+        "id": 195,
         "workflowId": "bNkrcNUHQfESa8ek",
         "versionId": "1981843d-b37b-4c3e-8c3c-c1ed8770b1ea",
         "event": "activated",

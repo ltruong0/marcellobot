@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T23:16:57.834Z",
+  "updatedAt": "2026-01-28T23:39:33.338Z",
   "createdAt": "2026-01-28T22:00:48.788Z",
   "id": "gQd3GuNHtZ3XVUJP",
   "name": "Universal Stock Monitor",
@@ -403,7 +403,7 @@
     "templateCredsSetupCompleted": false
   },
   "activeVersionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
-  "versionCounter": 11,
+  "versionCounter": 29,
   "shared": [
     {
       "updatedAt": "2026-01-28T22:00:48.790Z",
@@ -879,6 +879,54 @@
       {
         "createdAt": "2026-01-28T23:16:57.899Z",
         "id": 140,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:26:52.599Z",
+        "id": 152,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:34:48.393Z",
+        "id": 161,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:35:55.788Z",
+        "id": 170,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:13.620Z",
+        "id": 179,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:37:42.703Z",
+        "id": 188,
+        "workflowId": "gQd3GuNHtZ3XVUJP",
+        "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
+        "event": "activated",
+        "userId": "7beaf598-6999-4d3c-9d00-baa047dc31a6"
+      },
+      {
+        "createdAt": "2026-01-28T23:39:33.377Z",
+        "id": 197,
         "workflowId": "gQd3GuNHtZ3XVUJP",
         "versionId": "0357e043-e636-4a72-8148-f8c6d18e1050",
         "event": "activated",
