@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.8.0 (2026-01-29)
+
+## [0.8.0](https://github.com/ltruong0/marcellobot/compare/v0.7.0...v0.8.0) (2026-01-29)
+
+
+### Features
+
+* add universal AI stock monitor and improve workflows ([9a22187](https://github.com/ltruong0/marcellobot/commit/9a221878cfbff1c6eb7982752114d0af451ba4a5))
+* add universal AI-powered stock checker with Ollama ([1532475](https://github.com/ltruong0/marcellobot/commit/15324755ad9b20e869a30c5a0360652289bb99a4))
+
+
+### Bug Fixes
+
+* improve AI prompt for more accurate stock detection ([c022792](https://github.com/ltruong0/marcellobot/commit/c022792603bb77194e432cf7bae4fc2c10a69cca))
+* prevent out-of-stock alerts from going to stock-alerts channel ([5bd71dd](https://github.com/ltruong0/marcellobot/commit/5bd71dd3f7bab71547dc12c234a49345c492fcf6))
+* remove duplicate workflow files and improve stock detection ([6a2d737](https://github.com/ltruong0/marcellobot/commit/6a2d7379be094d0ee09a25b116532f0a3a0ce77c))
+* restore working AI configuration for stock checker ([bd8d3a5](https://github.com/ltruong0/marcellobot/commit/bd8d3a5072c395f8c6235c4273c5289e84bceaae))
+
+
+### Documentation
+
+* update CHANGELOG.md for v0.7.0 [skip ci] ([6324985](https://github.com/ltruong0/marcellobot/commit/6324985a4b428563dbd51b769a59f6415d664055))
+
+
+
 ## Unreleased
 
 ### Features
